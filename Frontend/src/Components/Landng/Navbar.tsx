@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { HashLink as Link } from "react-router-hash-link";
 
 import {
   FaHouse,
@@ -28,25 +28,25 @@ const Navbar = () => {
       </div>
       <div className="w-6/12 flex items-end justify-center gap-x-2">
         <Button variant="ghost" asChild>
-          <Link to="#home">
+          <Link smooth to="/#home">
             <FaHouse className="w-4 h-4 mr-2" />
             Home
           </Link>
         </Button>
         <Button variant="ghost" asChild>
-          <Link to="#features">
+          <Link smooth to="/#features">
             <FaStar className="w-4 h-4 mr-2" />
             Features
           </Link>
         </Button>
         <Button variant="ghost" asChild>
-          <Link to="#pricing">
+          <Link smooth to="/#pricing">
             <FaCoins className="w-4 h-4 mr-2" />
             Pricing
           </Link>
         </Button>
         <Button variant="ghost" asChild>
-          <Link to="#faq">
+          <Link smooth to="/#faq">
             <FaQuestion className="w-4 h-4 mr-2" />
             FAQ
           </Link>

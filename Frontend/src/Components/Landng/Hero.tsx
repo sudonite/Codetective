@@ -1,6 +1,6 @@
 import { SiGithub, SiGitlab, SiGitea, SiBitbucket } from "react-icons/si";
 import { Button } from "@/Components/UI/Button";
-import { Link } from "react-router-dom";
+import { HashLink as Link } from "react-router-hash-link";
 
 const Hero = () => {
   return (
@@ -12,7 +12,10 @@ const Hero = () => {
               Check your code
             </h1>
             <h1 className="scroll-m-20 font-extrabold tracking-tight text-7xl">
-              with Codetective
+              with{" "}
+              <span className="bg-gradient-to-r from-primary to-primary/50 text-transparent bg-clip-text">
+                Codetective
+              </span>
             </h1>
           </div>
           <div className="">
@@ -31,10 +34,12 @@ const Hero = () => {
                 </h3>
               </Link>
             </Button>
-            <Button variant="ghost" className="h-16 w-1/3">
-              <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
-                How it works
-              </h4>
+            <Button variant="ghost" className="h-16 w-1/3" asChild>
+              <Link smooth to="/#how-it-works">
+                <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">
+                  How it works
+                </h4>
+              </Link>
             </Button>
           </div>
           <div className="flex grow items-end">
@@ -52,7 +57,9 @@ const Hero = () => {
           </div>
         </div>
       </div>
-      <div className="w-3/5"></div>
+      <div className="w-3/5 flex justify-center items-center">
+        <img src="/hero.png" className="w-8/12" />
+      </div>
     </div>
   );
 };

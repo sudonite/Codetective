@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import { Badge } from "@/Components/UI/Badge";
 import { Button } from "@/Components/UI/Button";
 import {
@@ -37,15 +39,14 @@ const pricingList: PricingProps[] = [
     available: 1,
     popular: 1,
     price: 0,
-    description:
-      "Lorem ipsum dolor sit, amet ipsum consectetur adipisicing elit.",
+    description: "Offers limited features tailored for testing purposes.",
     buttonText: "Get Started",
     benefitList: [
+      "Languages: C / C++",
       "1 Team member",
       "2 GB Storage",
-      "Upto 4 pages",
+      "1 Scan / Week",
       "Community support",
-      "lorem ipsum dolor",
     ],
   },
   {
@@ -53,15 +54,14 @@ const pricingList: PricingProps[] = [
     available: 0,
     popular: 0,
     price: 5,
-    description:
-      "Lorem ipsum dolor sit, amet ipsum consectetur adipisicing elit.",
+    description: "Upgrade to our Premium package for enhanced capabilities.",
     buttonText: "Start Free Trial",
     benefitList: [
-      "4 Team member",
-      "4 GB Storage",
-      "Upto 6 pages",
-      "Priority support",
-      "lorem ipsum dolor",
+      "1 Selectable language",
+      "3 Team member",
+      "10 GB Storage",
+      "1 Scan / Day",
+      "7/24 Support",
     ],
   },
   {
@@ -69,15 +69,14 @@ const pricingList: PricingProps[] = [
     available: 0,
     popular: 0,
     price: 40,
-    description:
-      "Lorem ipsum dolor sit, amet ipsum consectetur adipisicing elit.",
+    description: "Unlock unlimited potential with our Enterprise package.",
     buttonText: "Contact US",
     benefitList: [
-      "10 Team member",
-      "8 GB Storage",
-      "Upto 10 pages",
-      "Priority support",
-      "lorem ipsum dolor",
+      "All languages",
+      "Unlimited Members",
+      "Unlimited Storage",
+      "Unlimited Scan",
+      "7/24 Priority Support",
     ],
   },
 ];
@@ -94,8 +93,7 @@ const Pricing = () => {
         Access
       </h2>
       <h3 className="text-xl text-center text-muted-foreground pt-4 pb-8">
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Alias
-        reiciendis.
+        Choose the one that suits you from among our favorable offers.
       </h3>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {pricingList.map((pricing: PricingProps) => (
@@ -125,9 +123,11 @@ const Pricing = () => {
             </CardHeader>
 
             <CardContent>
-              <Button className="w-full" disabled={!pricing.available}>
-                {pricing.buttonText}
-              </Button>
+              <Link to="/auth/register">
+                <Button className="w-full" disabled={!pricing.available}>
+                  {pricing.buttonText}
+                </Button>
+              </Link>
             </CardContent>
 
             <hr className="w-4/5 m-auto mb-4" />
@@ -135,7 +135,7 @@ const Pricing = () => {
             <CardFooter className="flex">
               <div className="space-y-4">
                 {pricing.benefitList.map((benefit: string) => (
-                  <span key={benefit} className="flex">
+                  <span key={benefit} className="flex items-center">
                     <FaCheck className="text-green-500" />{" "}
                     <h3 className="ml-2">{benefit}</h3>
                   </span>

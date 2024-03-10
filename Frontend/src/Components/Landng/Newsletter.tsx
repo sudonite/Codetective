@@ -19,7 +19,7 @@ const Newsletter = () => {
           </span>
         </h3>
         <p className="text-xl text-muted-foreground text-center mt-4 mb-8">
-          Lorem ipsum dolor sit amet consectetur.
+          For the latest updates and insights delivered straight to your inbox.
         </p>
 
         <form
