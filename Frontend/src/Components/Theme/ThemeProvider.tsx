@@ -72,7 +72,6 @@ export function ThemeProvider({
     root.classList.remove(...themeSelectors);
     root.classList.add(`${mode}_${theme}`);
     root.classList.add(`radius_${radius}`);
-    console.log("ASD");
   }, [theme, mode, radius]);
 
   const value = {
