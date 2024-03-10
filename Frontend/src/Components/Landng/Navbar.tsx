@@ -16,6 +16,8 @@ import {
   DropdownMenuContent,
 } from "@/Components/UI/DropdownMenu";
 
+import ThemeChanger from "@/Components/Theme/ThemeChanger";
+
 const Navbar = () => {
   return (
     <div className="flex h-20">
@@ -51,6 +53,17 @@ const Navbar = () => {
         </Button>
       </div>
       <div className="w-3/12 flex items-end justify-end pr-20 gap-x-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost">
+              <FaPalette className="mr-2 h-4 w-4 inline-block" />
+              Themes
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" className="p-6 w-96">
+            <ThemeChanger />
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button variant="outline" asChild>
           <Link to="/auth/login">
             <FaRocket className="w-4 h-4 mr-2" />
