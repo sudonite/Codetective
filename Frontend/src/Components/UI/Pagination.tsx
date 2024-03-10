@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { RxChevronLeft, RxChevronRight } from "react-icons/rx";
 import { HiDotsHorizontal } from "react-icons/hi";
 
 import { cn } from "@/Utils";
@@ -71,7 +71,7 @@ const PaginationPrevious = ({
     className={cn("gap-1 pl-2.5", className)}
     {...props}
   >
-    <FaChevronLeft className="h-4 w-4" />
+    <RxChevronLeft className="h-4 w-4" />
     <span>Previous</span>
   </PaginationLink>
 );
@@ -88,7 +88,7 @@ const PaginationNext = ({
     {...props}
   >
     <span>Next</span>
-    <FaChevronRight className="h-4 w-4" />
+    <RxChevronRight className="h-4 w-4" />
   </PaginationLink>
 );
 PaginationNext.displayName = "PaginationNext";

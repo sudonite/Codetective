@@ -3,8 +3,7 @@
 import * as React from "react";
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 
-import { FaCheck, FaChevronRight } from "react-icons/fa";
-import { RxDotFilled } from "react-icons/rx";
+import { RxDotFilled, RxCheck, RxChevronRight } from "react-icons/rx";
 
 import { cn } from "@/Utils";
 
@@ -36,7 +35,7 @@ const DropdownMenuSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <FaChevronRight className="ml-auto h-4 w-4" />
+    <RxChevronRight className="ml-auto h-4 w-4" />
   </DropdownMenuPrimitive.SubTrigger>
 ));
 DropdownMenuSubTrigger.displayName =
@@ -110,7 +109,7 @@ const DropdownMenuCheckboxItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <DropdownMenuPrimitive.ItemIndicator>
-        <FaCheck className="h-4 w-4" />
+        <RxCheck className="h-4 w-4" />
       </DropdownMenuPrimitive.ItemIndicator>
     </span>
     {children}

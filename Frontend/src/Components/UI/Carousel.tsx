@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { RxArrowLeft, RxArrowRight } from "react-icons/rx";
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
 } from "embla-carousel-react";
@@ -216,7 +216,7 @@ const CarouselPrevious = React.forwardRef<
       onClick={scrollPrev}
       {...props}
     >
-      <FaArrowLeft className="h-4 w-4" />
+      <RxArrowLeft className="h-4 w-4" />
       <span className="sr-only">Previous slide</span>
     </Button>
   );
@@ -245,7 +245,7 @@ const CarouselNext = React.forwardRef<
       onClick={scrollNext}
       {...props}
     >
-      <FaArrowRight className="h-4 w-4" />
+      <RxArrowRight className="h-4 w-4" />
       <span className="sr-only">Next slide</span>
     </Button>
   );

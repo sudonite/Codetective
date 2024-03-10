@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { FaCheck } from "react-icons/fa";
-import { LuChevronsUpDown } from "react-icons/lu";
+import { RxCheck, RxCaretSort } from "react-icons/rx";
 
 import { cn } from "@/Utils";
 import { Button } from "@/Components/UI/Button";
@@ -63,7 +62,7 @@ export function ComboboxDemo() {
           {value
             ? frameworks.find(framework => framework.value === value)?.label
             : "Select framework..."}
-          <LuChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <RxCaretSort className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
@@ -80,7 +79,7 @@ export function ComboboxDemo() {
                   setOpen(false);
                 }}
               >
-                <FaCheck
+                <RxCheck
                   className={cn(
                     "mr-2 h-4 w-4",
                     value === framework.value ? "opacity-100" : "opacity-0"

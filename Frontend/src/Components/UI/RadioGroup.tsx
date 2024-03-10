@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { FaCheck } from "react-icons/fa";
+import { RxCheck } from "react-icons/rx";
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";
 
 import { cn } from "@/Utils";
@@ -34,7 +34,7 @@ const RadioGroupItem = React.forwardRef<
       {...props}
     >
       <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-        <FaCheck className="h-3.5 w-3.5 fill-primary" />
+        <RxCheck className="h-3.5 w-3.5 fill-primary" />
       </RadioGroupPrimitive.Indicator>
     </RadioGroupPrimitive.Item>
   );

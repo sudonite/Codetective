@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FaChevronDown } from "react-icons/fa";
+import { RxChevronDown } from "react-icons/rx";
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
 import { cva } from "class-variance-authority";
 
@@ -54,7 +54,7 @@ const NavigationMenuTrigger = React.forwardRef<
     {...props}
   >
     {children}{" "}
-    <FaChevronDown
+    <RxChevronDown
       className="relative top-[1px] ml-1 h-3 w-3 transition duration-300 group-data-[state=open]:rotate-180"
       aria-hidden="true"
     />

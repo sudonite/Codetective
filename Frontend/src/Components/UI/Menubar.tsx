@@ -2,8 +2,7 @@
 
 import * as React from "react";
 
-import { FaCheck, FaChevronRight } from "react-icons/fa";
-import { RxDotFilled } from "react-icons/rx";
+import { RxDotFilled, RxCheck, RxChevronRight } from "react-icons/rx";
 
 import * as MenubarPrimitive from "@radix-ui/react-menubar";
 
@@ -65,7 +64,7 @@ const MenubarSubTrigger = React.forwardRef<
     {...props}
   >
     {children}
-    <FaChevronRight className="ml-auto h-4 w-4" />
+    <RxChevronRight className="ml-auto h-4 w-4" />
   </MenubarPrimitive.SubTrigger>
 ));
 MenubarSubTrigger.displayName = MenubarPrimitive.SubTrigger.displayName;
@@ -143,7 +142,7 @@ const MenubarCheckboxItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <MenubarPrimitive.ItemIndicator>
-        <FaCheck className="h-4 w-4" />
+        <RxCheck className="h-4 w-4" />
       </MenubarPrimitive.ItemIndicator>
     </span>
     {children}

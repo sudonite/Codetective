@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BsDash } from "react-icons/bs";
+import { RxDash } from "react-icons/rx";
 import { OTPInput, SlotProps } from "input-otp";
 
 import { cn } from "@/Utils";
@@ -56,7 +56,7 @@ const InputOTPSeparator = React.forwardRef<
   React.ComponentPropsWithoutRef<"div">
 >(({ ...props }, ref) => (
   <div ref={ref} role="separator" {...props}>
-    <BsDash />
+    <RxDash />
   </div>
 ));
 InputOTPSeparator.displayName = "InputOTPSeparator";
