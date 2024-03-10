@@ -5,7 +5,7 @@ import {
   CardTitle,
 } from "@/Components/UI/Card";
 
-import { FaCodeBranch } from "react-icons/fa6";
+import { FaFingerprint, FaHammer, FaGit } from "react-icons/fa6";
 
 interface ServiceProps {
   title: string;
@@ -15,28 +15,28 @@ interface ServiceProps {
 
 const serviceList: ServiceProps[] = [
   {
-    title: "Code Collaboration",
+    title: "Repository",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi nesciunt est nostrum omnis ab sapiente.",
-    icon: <FaCodeBranch />,
+      "Simply connect your GitHub or GitLab or Gitea or Bitbucket account and select the repositories you want to scan.",
+    icon: <FaGit />,
   },
   {
-    title: "Project Management",
+    title: "AI Analysis",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi nesciunt est nostrum omnis ab sapiente.",
-    icon: <FaCodeBranch />,
+      "Our advanced AI model gets to work, analyzing your codebase for potential security vulnerabilities.",
+    icon: <FaFingerprint />,
   },
   {
-    title: "Task Automation",
+    title: "Detailed Reports",
     description:
-      "Lorem ipsum dolor sit amet consectetur adipisicing elit. Nisi nesciunt est nostrum omnis ab sapiente.",
-    icon: <FaCodeBranch />,
+      "Receive detailed reports outlining identified vulnerabilities, which you can easily fix.",
+    icon: <FaHammer />,
   },
 ];
 
 const HowItWorks = () => {
   return (
-    <section className="container mx-auto py-24 sm:py-32">
+    <section id="how-it-works" className="container mx-auto py-24 sm:py-32">
       <div className="grid lg:grid-cols-[1fr,1fr] gap-8 place-items-center">
         <div>
           <h2 className="text-3xl md:text-4xl font-bold">
@@ -48,8 +48,8 @@ const HowItWorks = () => {
           </h2>
 
           <p className="text-muted-foreground text-xl mt-4 mb-8 ">
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Veritatis
-            dolor.
+            Save time and resources with automated scanning and actionable
+            reports.
           </p>
 
           <div className="flex flex-col gap-8">
@@ -69,6 +69,9 @@ const HowItWorks = () => {
               </Card>
             ))}
           </div>
+        </div>
+        <div className="flex justify-center items-end">
+          <img src="howitworks.png" className="w-9/12" />
         </div>
       </div>
     </section>

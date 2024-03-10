@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/Components/UI/Card";
 
-import { FaCodeBranch } from "react-icons/fa6";
+import { FaCodeBranch, FaUser, FaBrain, FaHandPeace } from "react-icons/fa6";
 
 interface FeatureProps {
   icon: JSX.Element;
@@ -10,34 +10,34 @@ interface FeatureProps {
 
 const features: FeatureProps[] = [
   {
-    icon: <FaCodeBranch />,
-    title: "Accesibility",
+    icon: <FaUser />,
+    title: "User-Friendly Interface",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illum quas provident cum",
+      "Access detailed reports on detected vulnerabilities, enabling quick and efficient remediation.",
+  },
+  {
+    icon: <FaBrain />,
+    title: "Cutting-edge AI Technology",
+    description:
+      "Our proprietary AI-powered model, built by experts in cybersecurity and machine learning.",
   },
   {
     icon: <FaCodeBranch />,
-    title: "Community",
+    title: "Efficiency",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illum quas provident cum",
+      "Use it easily from any device, and integrate it into your existing development workflow.",
   },
   {
-    icon: <FaCodeBranch />,
-    title: "Scalability",
+    icon: <FaHandPeace />,
+    title: "Peace of Mind",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illum quas provident cum",
-  },
-  {
-    icon: <FaCodeBranch />,
-    title: "Gamification",
-    description:
-      "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Illum quas provident cum",
+      "Rest assured knowing that your code is being protected, allowing you to focus on development.",
   },
 ];
 
 const Features = () => {
   return (
-    <section className="container mx-auto text-center py-32">
+    <section id="features" className="container mx-auto text-center py-32">
       <h2 className="text-4xl font-bold ">
         Many
         <span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
@@ -46,8 +46,7 @@ const Features = () => {
         </span>
       </h2>
       <p className="w-3/4 mx-auto mt-4 mb-8 text-xl text-muted-foreground">
-        Lorem ipsum dolor sit amet consectetur, adipisicing elit. Veritatis
-        dolor pariatur sit!
+        Don't wait until it's too late. Protect your software with Codetective.
       </p>
 
       <div className="grid grid-cols-4 gap-8">
