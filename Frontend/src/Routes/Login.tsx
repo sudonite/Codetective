@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { FaArrowLeft } from "react-icons/fa6";
 import { AiOutlineLoading } from "react-icons/ai";
@@ -12,14 +12,15 @@ import { Checkbox } from "@/Components/UI/Checkbox";
 import AuthLayout from "@/Components/Auth/AuthLayout";
 
 const Login = () => {
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const [loading, _] = useState(false);
 
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const monthRef = useRef<HTMLButtonElement>(null);
 
   const handleLogin = () => {
-    setLoading(true);
+    navigate("/dashboard");
   };
 
   return (
