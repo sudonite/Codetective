@@ -7,6 +7,8 @@ import {
 
 import { FaFingerprint, FaHammer, FaGit } from "react-icons/fa6";
 
+import image from "@/Assets/howitworks.png";
+
 interface ServiceProps {
   title: string;
   description: string;
@@ -71,7 +73,7 @@ const HowItWorks = () => {
           </div>
         </div>
         <div className="flex justify-center items-end">
-          <img src="howitworks.png" className="w-9/12" />
+          <img src={image} className="w-9/12" />
         </div>
       </div>
     </section>

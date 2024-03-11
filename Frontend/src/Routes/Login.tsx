@@ -23,7 +23,7 @@ const Login = () => {
   };
 
   return (
-    <AuthLayout>
+    <AuthLayout route="login">
       <div className="w-full h-full relative flex justify-center items-center">
         <Button
           variant="ghost"

@@ -22,8 +22,9 @@ const Register = () => {
   const handleRegister = () => {
     setLoading(true);
   };
+
   return (
-    <AuthLayout>
+    <AuthLayout route="register">
       <div className="w-full h-full relative flex justify-center items-center">
         <Button
           variant="ghost"

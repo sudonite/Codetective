@@ -2,6 +2,8 @@ import { SiGithub, SiGitlab, SiGitea, SiBitbucket } from "react-icons/si";
 import { Button } from "@/Components/UI/Button";
 import { HashLink as Link } from "react-router-hash-link";
 
+import image from "@/Assets/hero.png";
+
 const Hero = () => {
   return (
     <div className="min-w-screen min-h-[calc(100vh-5rem)] flex">
@@ -58,7 +60,7 @@ const Hero = () => {
         </div>
       </div>
       <div className="w-3/5 flex justify-center items-center">
-        <img src="/hero.png" className="w-8/12" />
+        <img src={image} className="w-8/12" />
       </div>
     </div>
   );
