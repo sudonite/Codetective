@@ -1,12 +1,179 @@
-const RepositoryArea = () => {
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+
+import { Tabs, TabsList, TabsTrigger } from "@/Components/UI/Tabs";
+
+import { Badge } from "@/Components/UI/Badge";
+
+import { Button } from "@/Components/UI/Button";
+import { ScrollArea } from "@/Components/UI/ScrollArea";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/Components/UI/Card";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/Components/UI/Select";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/Components/UI/DropdownMenu";
+
+import RepositoryIcon from "@/Components/Dashboard/RepositoryIcon";
+
+import { cn, capitalizeFirstLetter } from "@/Utils";
+import { Repositories, Repository } from "@/Types";
+import ThemeChanger from "@/Components/Theme/ThemeChanger";
+
+import { MdLogout } from "react-icons/md";
+import { IoMdSettings } from "react-icons/io";
+import { FaShieldHalved, FaPalette } from "react-icons/fa6";
+
+interface RepositoryAreaProps {
+  repositories: Repositories;
+  selectedRepository: Repository | null;
+  onClick: React.Dispatch<React.SetStateAction<Repository | null>>;
+}
+
+const RepositoryArea = ({
+  repositories,
+  selectedRepository,
+  onClick,
+}: RepositoryAreaProps) => {
+  const navigate = useNavigate();
+  const [filteredRepository, setFilteredRepository] = useState<string>("all");
+  const [filteredCategory, setFilteredCategory] = useState<string>("all");
+
+  const handleLogout = () => {
+    navigate("/");
+  };
+
   return (
     <div className="h-screen flex flex-col">
       <div className="h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-d">
-        <h1 className="text-center">TopBar</h1>
+        <Select
+          defaultValue={filteredRepository}
+          onValueChange={e => setFilteredRepository(e)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Repository" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={"all"}>{"All repositories"}</SelectItem>
+            {[...new Set(repositories.map(item => item.name))].map(
+              (name, index) => (
+                <SelectItem key={index} value={name}>
+                  {name}
+                </SelectItem>
+              )
+            )}
+          </SelectContent>
+        </Select>
+        <Tabs
+          defaultValue={filteredCategory}
+          className="w-[400px]"
+          onValueChange={e => setFilteredCategory(e)}
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value={"all"}>All</TabsTrigger>
+            <TabsTrigger value={"vulnerable"}>Vulnerable</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
-      <div className="grow bg-secondary/50">Content</div>
+      <div className="grow bg-secondary/50">
+        {repositories.length < 1 ? (
+          <div className="flex flex-col h-full justify-center items-center gap-y-4">
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+              No repositories found
+            </h3>
+            <Button variant="outline">Add new Repository</Button>
+          </div>
+        ) : (
+          <ScrollArea className="h-[calc(100vh-8rem)]">
+            {repositories
+              .filter(
+                repo =>
+                  filteredRepository === "all" ||
+                  repo.name === filteredRepository
+              )
+              .filter(
+                repo =>
+                  filteredCategory === "all" || repo.status === filteredCategory
+              )
+              .sort((a: any, b: any) => b.date - a.date)
+              .map(repository => (
+                <Card
+                  key={repository.id}
+                  className={cn(
+                    "m-4 cursor-pointer",
+                    repository.id === selectedRepository?.id
+                      ? "bg-primary/50 hover:bg-primary/50"
+                      : "bg-background hover:bg-accent"
+                  )}
+                  onClick={() => onClick(repository)}
+                >
+                  <CardHeader className="space-y-1 flex flex-row justify-start items-start gap-4">
+                    <div className="mt-1 bg-primary/20 rounded-lg p-2">
+                      <RepositoryIcon platform={repository.platform} />
+                    </div>
+                    <div className="grow">
+                      <CardTitle>{repository.name}</CardTitle>
+                      <CardDescription className="text-md mt-2 w-full">
+                        {repository.date.toDateString()}
+                      </CardDescription>
+                    </div>
+                    <div>
+                      <Badge
+                        variant={
+                          repository.status == "vulnerable"
+                            ? "destructive"
+                            : repository.status === "clean"
+                            ? "default"
+                            : "secondary"
+                        }
+                      >
+                        {capitalizeFirstLetter(repository.status)}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                </Card>
+              ))}
+          </ScrollArea>
+        )}
+      </div>
       <div className="h-16 max-h-16 p-2 flex flex-row items-center justify-between border-t">
-        BottomBar
+        <Button variant="secondary">
+          <FaShieldHalved className="mr-2 h-4 w-4" /> Scan code
+        </Button>
+        <div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <FaPalette className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center" className="p-6 w-96">
+              <ThemeChanger />
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="ghost" size="icon" asChild>
+            <Link to="/settings">
+              <IoMdSettings className="h-4 w-4" />
+            </Link>
+          </Button>
+          <Button variant="ghost" size="icon" onClick={handleLogout}>
+            <MdLogout className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );
