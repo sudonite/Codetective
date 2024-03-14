@@ -96,54 +96,64 @@ const CodeArea = ({ codes, file }: CodeAreaProps) => {
         </div>
       </div>
       <div className="grow">
-        <ScrollArea className="w-full h-full rounded-lg">
-          <SyntaxHighlighter
-            wrapLongLines={wordWrap}
-            showLineNumbers={lineNumbers}
-            startingLineNumber={codes?.[0]?.lineStart}
-            language="cpp"
-            style={codeTheme as { [key: string]: React.CSSProperties }}
-          >
-            {codes?.[selectedCodeID - 1]?.code}
-          </SyntaxHighlighter>
-          <ScrollBar orientation="horizontal" />
-          <ScrollBar />
-        </ScrollArea>
+        {codes.length === 0 ? (
+          <div className="flex justify-center items-center h-full">
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+              Select file
+            </h3>
+          </div>
+        ) : (
+          <ScrollArea className="w-full h-full rounded-lg">
+            <SyntaxHighlighter
+              wrapLongLines={wordWrap}
+              showLineNumbers={lineNumbers}
+              startingLineNumber={codes?.[0]?.lineStart}
+              language="cpp"
+              style={codeTheme as { [key: string]: React.CSSProperties }}
+            >
+              {codes?.[selectedCodeID - 1]?.code}
+            </SyntaxHighlighter>
+            <ScrollBar orientation="horizontal" />
+            <ScrollBar />
+          </ScrollArea>
+        )}
       </div>
       <div className="h-16 max-h-16 p-2 flex flex-row items-center border-t">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                className="cursor-pointer"
-                onClick={() => handleCodeChange("prev")}
-              />
-            </PaginationItem>
-            {codes?.map((code, index) => (
-              <PaginationItem key={code.id}>
-                <PaginationLink
-                  className={cn(
-                    "cursor-pointer",
-                    `${
-                      selectedCodeID === index + 1
-                        ? "bg-primary/50 hover:bg-primary/50"
-                        : ""
-                    }`
-                  )}
-                  onClick={() => setSelectedCodeID(index + 1)}
-                >
-                  {index + 1}
-                </PaginationLink>
+        {codes.length > 1 && (
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  className="cursor-pointer"
+                  onClick={() => handleCodeChange("prev")}
+                />
               </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                className="cursor-pointer"
-                onClick={() => handleCodeChange("next")}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+              {codes?.map((code, index) => (
+                <PaginationItem key={code.id}>
+                  <PaginationLink
+                    className={cn(
+                      "cursor-pointer",
+                      `${
+                        selectedCodeID === index + 1
+                          ? "bg-primary/50 hover:bg-primary/50"
+                          : ""
+                      }`
+                    )}
+                    onClick={() => setSelectedCodeID(index + 1)}
+                  >
+                    {index + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  className="cursor-pointer"
+                  onClick={() => handleCodeChange("next")}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        )}
       </div>
     </div>
   );

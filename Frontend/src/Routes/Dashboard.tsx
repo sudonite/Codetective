@@ -35,6 +35,7 @@ const Dashboard = () => {
   const handleRepositoryChange = (repository: Repository) => {
     setSelectedRepository(repository);
     setSelectedFile(null);
+    setCodes([]);
   };
 
   const handleFileChange = (file: File) => {
