@@ -1,4 +1,4 @@
-import { Files, Repositories } from "@/Types";
+import { Files, Repositories, Codes } from "@/Types";
 
 const repositories: Repositories = [
   {
@@ -329,6 +329,292 @@ const repositoryFiles: number[][] = [
   [19, 20],
 ];
 
+const codes: Codes = [
+  {
+    id: 1,
+    lineStart: 128,
+    code: "void insertText(std::string& document, const std::string& text, int position) {\n\tdocument.insert(position, text);\n}",
+    date: new Date(),
+  },
+  {
+    id: 2,
+    lineStart: 182,
+    code: "void deleteText(std::string& document, int start, int end) {\n\tdocument.erase(start, end - start);\n}",
+    date: new Date(),
+  },
+  {
+    id: 3,
+    lineStart: 101,
+    code: "void replaceText(std::string& document, const std::string& newText, int start, int end) {\n\tdocument.replace(start, end - start, newText);\n}",
+    date: new Date(),
+  },
+  {
+    id: 4,
+    lineStart: 168,
+    code: "int countWords(const std::string& document) {\n\tint count = 0;\n\tstd::istringstream iss(document);\n\tstd::string word;\n\twhile (iss >> word)\n\t\t++count;\n\treturn count;\n}",
+    date: new Date(),
+  },
+  {
+    id: 5,
+    lineStart: 122,
+    code: "int searchText(const std::string& document, const std::string& searchString) {\n\tsize_t pos = document.find(searchString);\n\tif (pos != std::string::npos)\n\t\treturn static_cast<int>(pos);\n\telse\n\t\treturn -1; // Not found\n}",
+    date: new Date(),
+  },
+  {
+    id: 6,
+    lineStart: 184,
+    code: "void toUpperCase(std::string& document) {\n\tstd::transform(document.begin(), document.end(), document.begin(), ::toupper);\n}",
+    date: new Date(),
+  },
+  {
+    id: 7,
+    lineStart: 142,
+    code: "void toLowerCase(std::string& document) {\n\tstd::transform(document.begin(), document.end(), document.begin(), ::tolower);\n}",
+    date: new Date(),
+  },
+  {
+    id: 8,
+    lineStart: 10,
+    code: "void trimWhitespace(std::string& document) {\n\tdocument.erase(std::remove_if(document.begin(), document.end(), ::isspace), document.end());\n}",
+    date: new Date(),
+  },
+  {
+    id: 9,
+    lineStart: 188,
+    code: "std::string extractSubstring(const std::string& document, int start, int length) {\n\treturn document.substr(start, length);\n}",
+    date: new Date(),
+  },
+  {
+    id: 10,
+    lineStart: 16,
+    code: "void reverseText(std::string& document) {\n\tstd::reverse(document.begin(), document.end());\n}",
+    date: new Date(),
+  },
+  {
+    id: 11,
+    lineStart: 108,
+    code: "void findAndReplace(std::string& document, const std::string& search, const std::string& replace) {\n\tsize_t pos = document.find(search);\n\twhile (pos != std::string::npos) {\n\t\tdocument.replace(pos, search.length(), replace);\n\t\tpos = document.find(search, pos + replace.length());\n\t}\n}",
+    date: new Date(),
+  },
+  {
+    id: 12,
+    lineStart: 12,
+    code: "int countOccurrences(const std::string& document, const std::string& substring) {\n\tint count = 0;\n\tsize_t pos = document.find(substring);\n\twhile (pos != std::string::npos) {\n\t\t++count;\n\t\tpos = document.find(substring, pos + substring.length());\n\t}\n\treturn count;\n}",
+    date: new Date(),
+  },
+  {
+    id: 13,
+    lineStart: 18,
+    code: "void insertLine(std::string& document, const std::string& line, int lineNumber) {\n\tstd::istringstream iss(document);\n\tstd::vector<std::string> lines;\n\tstd::string currentLine;\n\twhile (std::getline(iss, currentLine))\n\t\tlines.push_back(currentLine);\n\tif (lineNumber >= 0 && lineNumber <= lines.size())\n\t\tlines.insert(lines.begin() + lineNumber, line);\n\tdocument.clear();\n\tfor (const auto& l : lines)\n\t\tdocument += l + '\n';\n}",
+    date: new Date(),
+  },
+  {
+    id: 14,
+    lineStart: 162,
+    code: "void deleteLine(std::string& document, int lineNumber) {\n\tstd::istringstream iss(document);\n\tstd::vector<std::string> lines;\n\tstd::string currentLine;\n\twhile (std::getline(iss, currentLine))\n\t\tlines.push_back(currentLine);\n\tif (lineNumber >= 0 && lineNumber < lines.size())\n\t\tlines.erase(lines.begin() + lineNumber);\n\tdocument.clear();\n\tfor (const auto& l : lines)\n\t\tdocument += l + '\n';\n}",
+    date: new Date(),
+  },
+  {
+    id: 15,
+    lineStart: 112,
+    code: "std::string extractLine(const std::string& document, int lineNumber) {\n\tstd::istringstream iss(document);\n\tstd::string currentLine;\n\tfor (int i = 0; i < lineNumber; ++i)\n\t\tstd::getline(iss, currentLine);\n\treturn currentLine;\n}",
+    date: new Date(),
+  },
+  {
+    id: 16,
+    lineStart: 102,
+    code: "int getDocumentLength(const std::string& document) {\n\treturn document.length();\n}",
+    date: new Date(),
+  },
+  {
+    id: 17,
+    lineStart: 186,
+    code: "void clearDocument(std::string& document) {\n\tdocument.clear();\n}",
+    date: new Date(),
+  },
+  {
+    id: 18,
+    lineStart: 104,
+    code: "std::string copyText(const std::string& document, int start, int end) {\n\treturn document.substr(start, end - start);\n}",
+    date: new Date(),
+  },
+  {
+    id: 19,
+    lineStart: 164,
+    code: "void pasteText(std::string& document, const std::string& text, int position) {\n\tdocument.insert(position, text);\n}",
+    date: new Date(),
+  },
+  {
+    id: 20,
+    lineStart: 118,
+    code: "void undo(std::string& document, const std::string& previousState) {\n\tdocument = previousState;\n}",
+    date: new Date(),
+  },
+  {
+    id: 21,
+    lineStart: 180,
+    code: "void mergeDocuments(std::string& targetDocument, const std::string& sourceDocument, int position) {\n\ttargetDocument.insert(position, sourceDocument);\n}",
+    date: new Date(),
+  },
+  {
+    id: 22,
+    lineStart: 148,
+    code: "std::vector<std::string> splitDocument(const std::string& document, char delimiter) {\n\tstd::vector<std::string> result;\n\tstd::istringstream iss(document);\n\tstd::string token;\n\twhile (std::getline(iss, token, delimiter)) {\n\t\tresult.push_back(token);\n\t}\n\treturn result;\n}",
+    date: new Date(),
+  },
+  {
+    id: 23,
+    lineStart: 11,
+    code: "void sortLines(std::string& document) {\n\tstd::istringstream iss(document);\n\tstd::vector<std::string> lines;\n\tstd::string line;\n\twhile (std::getline(iss, line))\n\t\tlines.push_back(line);\n\tstd::sort(lines.begin(), lines.end());\n\tdocument.clear();\n\tfor (const auto& l : lines)\n\t\tdocument += l + '\n';\n}",
+    date: new Date(),
+  },
+  {
+    id: 24,
+    lineStart: 182,
+    code: "void indentText(std::string& document, int spaces, int startLine, int endLine) {\n\tstd::istringstream iss(document);\n\tstd::vector<std::string> lines;\n\tstd::string line;\n\tint currentLine = 0;\n\twhile (std::getline(iss, line)) {\n\t\t++currentLine;\n\t\tif (currentLine >= startLine && currentLine <= endLine) {\n\t\t\tline.insert(0, spaces, ' ');\n\t\t}\n\t\tlines.push_back(line);\n\t}\n\tdocument.clear();\n\tfor (const auto& l : lines)\n\t\tdocument += l + '\n';\n}",
+    date: new Date(),
+  },
+  {
+    id: 25,
+    lineStart: 14,
+    code: 'void highlightText(std::string& document, int start, int end) {\n\t// Example: Wrap the highlighted text with <mark> tag\n\tdocument.insert(start, "<mark>");\n\tdocument.insert(end + 6, "</mark>");\n}',
+    date: new Date(),
+  },
+  {
+    id: 26,
+    lineStart: 18,
+    code: "void commentLines(std::string& document, const std::string& commentPrefix, int startLine, int endLine) {\n\tstd::istringstream iss(document);\n\tstd::vector<std::string> lines;\n\tstd::string line;\n\tint currentLine = 0;\n\twhile (std::getline(iss, line)) {\n\t\t++currentLine;\n\t\tif (currentLine >= startLine && currentLine <= endLine) {\n\t\t\tline.insert(0, commentPrefix);\n\t\t}\n\t\tlines.push_back(line);\n\t}\n\tdocument.clear();\n\tfor (const auto& l : lines)\n\t\tdocument += l + '\n';\n}",
+    date: new Date(),
+  },
+  {
+    id: 27,
+    lineStart: 166,
+    code: "std::vector<std::string> spellCheck(const std::string& document) {\n\tstd::vector<std::string> mistakes;\n\t// Implement spell checking logic here\n\treturn mistakes;\n}",
+    date: new Date(),
+  },
+  {
+    id: 28,
+    lineStart: 114,
+    code: "void replaceTabsWithSpaces(std::string& document, int spacesPerTab) {\n\tsize_t pos = document.find('\t');\n\twhile (pos != std::string::npos) {\n\t\tdocument.replace(pos, 1, spacesPerTab, ' ');\n\t\tpos = document.find('\t', pos + spacesPerTab);\n\t}\n}",
+    date: new Date(),
+  },
+  {
+    id: 29,
+    lineStart: 18,
+    code: 'void insertTimestamp(std::string& document) {\n\tstd::time_t now = std::time(nullptr);\n\tstd::tm* currentTime = std::localtime(&now);\n\tchar timestamp[20];\n\tstd::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", currentTime);\n\tdocument += timestamp;\n}',
+    date: new Date(),
+  },
+  {
+    id: 30,
+    lineStart: 106,
+    code: "void encryptDocument(std::string& document, const std::string& encryptionKey) {\n\t// Implement encryption logic here using the encryptionKey\n}",
+    date: new Date(),
+  },
+  {
+    id: 31,
+    lineStart: 160,
+    code: "void insertCharacter(std::string& document, char character, int position) {\n\tdocument.insert(position, 1, character);\n}",
+    date: new Date(),
+  },
+  {
+    id: 32,
+    lineStart: 116,
+    code: "void deleteCharacter(std::string& document, int position) {\n\tif (position >= 0 && position < document.length())\n\t\tdocument.erase(position, 1);\n}",
+    date: new Date(),
+  },
+  {
+    id: 33,
+    lineStart: 18,
+    code: "void moveCursor(int& cursorPosition, int newPosition, int documentLength) {\n\tif (newPosition >= 0 && newPosition <= documentLength)\n\t\tcursorPosition = newPosition;\n}",
+    date: new Date(),
+  },
+  {
+    id: 34,
+    lineStart: 124,
+    code: "std::string getSelectedText(const std::string& document, int selectionStart, int selectionEnd) {\n\treturn document.substr(selectionStart, selectionEnd - selectionStart);\n}",
+    date: new Date(),
+  },
+  {
+    id: 35,
+    lineStart: 18,
+    code: "void scroll(int& scrollPosition, int scrollAmount, int documentLength, int visibleAreaSize) {\n\tint maxScroll = documentLength - visibleAreaSize;\n\tscrollPosition = std::max(0, std::min(maxScroll, scrollPosition + scrollAmount));\n}",
+    date: new Date(),
+  },
+  {
+    id: 36,
+    lineStart: 100,
+    code: 'void setTextColor(std::string& document, int start, int end, const std::string& color) {\n\t// Add HTML tags for color\n\tdocument.insert(start, "<span style="color: " + color + "">");\n\tdocument.insert(end + 1, "</span>");\n}',
+    date: new Date(),
+  },
+  {
+    id: 37,
+    lineStart: 161,
+    code: 'void insertLink(std::string& document, const std::string& url, int start, int end) {\n\t// Add HTML tags for hyperlink\n\tdocument.insert(start, "<a href="" + url + "">");\n\tdocument.insert(end + url.length() + 9, "</a>");\n}',
+    date: new Date(),
+  },
+  {
+    id: 38,
+    lineStart: 110,
+    code: 'void insertImage(std::string& document, const std::string& imageUrl, int position) {\n\t// Add HTML tag for image\n\tdocument.insert(position, "<img src="" + imageUrl + "">");\n}',
+    date: new Date(),
+  },
+  {
+    id: 39,
+    lineStart: 184,
+    code: "void indentText(std::string& document, int start, int end, int numSpaces) {\n\tstd::string spaces(numSpaces, ' ');\n\tstd::string::iterator it = std::find_if(document.begin() + start, document.begin() + end, [](char c) { return !std::isspace(c); });\n\tdocument.insert(it, spaces);\n}",
+    date: new Date(),
+  },
+  {
+    id: 40,
+    lineStart: 146,
+    code: "void sortLines(std::string& document) {\n\tstd::istringstream iss(document);\n\tstd::vector<std::string> lines;\n\tstd::string line;\n\twhile (std::getline(iss, line))\n\t\tlines.push_back(line);\n\tstd::sort(lines.begin(), lines.end());\n\tdocument.clear();\n\tfor (const auto& sortedLine : lines)\n\t\tdocument += sortedLine + '\n';\n}",
+    date: new Date(),
+  },
+];
+
+const fileCodes: number[][] = [
+  [1, 1],
+  [1, 2],
+  [1, 3],
+  [1, 4],
+  [2, 5],
+  [2, 6],
+  [3, 7],
+  [4, 8],
+  [5, 9],
+  [6, 10],
+  [6, 11],
+  [6, 12],
+  [7, 13],
+  [8, 14],
+  [9, 15],
+  [10, 16],
+  [11, 17],
+  [11, 18],
+  [12, 19],
+  [13, 20],
+  [14, 21],
+  [15, 22],
+  [16, 23],
+  [16, 24],
+  [16, 25],
+  [16, 26],
+  [16, 27],
+  [17, 28],
+  [17, 29],
+  [17, 30],
+  [18, 31],
+  [19, 32],
+  [19, 33],
+  [20, 34],
+  [20, 35],
+  [20, 36],
+  [20, 37],
+  [20, 38],
+  [20, 39],
+  [20, 40],
+];
+
 export const getRepositories = (): Repositories => {
   return repositories;
 };
@@ -338,4 +624,9 @@ export const getFiles = (id: number) => {
     .filter(file => file[0] === id)
     .map(file => file[1]);
   return files.filter(file => fileIds.includes(file.id));
+};
+
+export const getCodes = (id: number) => {
+  const codeIds = fileCodes.filter(code => code[0] === id).map(code => code[1]);
+  return codes.filter(code => codeIds.includes(code.id));
 };

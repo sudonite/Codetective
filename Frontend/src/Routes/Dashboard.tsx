@@ -9,8 +9,8 @@ import {
 import RepositoryArea from "@/Components/Dashboard/RepositoryArea";
 import FileArea from "@/Components/Dashboard/FileArea";
 import CodeArea from "@/Components/Dashboard/CodeArea";
-import { Repositories, Repository, Files, File } from "@/Types";
-import { getRepositories, getFiles } from "@/fakeAPI";
+import { Repositories, Repository, Files, File, Codes } from "@/Types";
+import { getRepositories, getFiles, getCodes } from "@/fakeAPI";
 
 const Dashboard = () => {
   const [repositories, setRepositories] = useState<Repositories>([]);
@@ -19,6 +19,8 @@ const Dashboard = () => {
 
   const [files, setFiles] = useState<Files>([]);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  const [codes, setCodes] = useState<Codes>([]);
 
   useEffect(() => {
     setRepositories(getRepositories());
@@ -37,6 +39,7 @@ const Dashboard = () => {
 
   const handleFileChange = (file: File) => {
     setSelectedFile(file);
+    setCodes(getCodes(file.id));
   };
 
   return (
@@ -59,7 +62,7 @@ const Dashboard = () => {
         </ResizablePanel>
         <ResizableHandle withHandle />
         <ResizablePanel minSize={50} defaultSize={50}>
-          <CodeArea />
+          <CodeArea file={selectedFile} codes={codes} />
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
