@@ -1,4 +1,4 @@
-import { Repositories } from "@/Types";
+import { Files, Repositories } from "@/Types";
 
 const repositories: Repositories = [
   {
@@ -163,6 +163,179 @@ const repositories: Repositories = [
   },
 ];
 
+const files: Files = [
+  {
+    id: 1,
+    path: "src/handler/",
+    name: "main",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 2,
+    path: "src/handler/",
+    name: "utility",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 3,
+    path: "src/handler/",
+    name: "test",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 4,
+    path: "src/handler/",
+    name: "data",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 5,
+    path: "src/handler/",
+    name: "gui",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 6,
+    path: "src/handler/",
+    name: "network",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 7,
+    path: "src/handler/",
+    name: "math",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 8,
+    path: "src/handler/",
+    name: "image",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 9,
+    path: "src/handler/",
+    name: "audio",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 10,
+    path: "src/handler/",
+    name: "store",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 11,
+    path: "src/handler/",
+    name: "write",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 12,
+    path: "src/handler/",
+    name: "handle",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 13,
+    path: "src/handler/",
+    name: "server",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 14,
+    path: "src/handler/",
+    name: "send",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 15,
+    path: "src/handler/",
+    name: "read",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 16,
+    path: "src/handler/",
+    name: "reset",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 17,
+    path: "src/handler/",
+    name: "replace",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 18,
+    path: "src/handler/",
+    name: "calculate",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 19,
+    path: "src/handler/",
+    name: "reload",
+    extension: "cpp",
+    date: new Date(),
+  },
+  {
+    id: 20,
+    path: "src/handler/",
+    name: "config",
+    extension: "cpp",
+    date: new Date(),
+  },
+];
+
+const repositoryFiles: number[][] = [
+  [3, 1],
+  [3, 2],
+  [3, 3],
+  [3, 4],
+  [4, 5],
+  [4, 6],
+  [4, 7],
+  [8, 8],
+  [8, 9],
+  [10, 10],
+  [10, 11],
+  [10, 12],
+  [14, 13],
+  [14, 14],
+  [14, 15],
+  [18, 16],
+  [18, 17],
+  [19, 18],
+  [19, 19],
+  [19, 20],
+];
+
 export const getRepositories = (): Repositories => {
   return repositories;
+};
+
+export const getFiles = (id: number) => {
+  const fileIds = repositoryFiles
+    .filter(file => file[0] === id)
+    .map(file => file[1]);
+  return files.filter(file => fileIds.includes(file.id));
 };

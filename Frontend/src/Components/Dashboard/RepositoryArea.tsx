@@ -41,7 +41,7 @@ import { FaShieldHalved, FaPalette } from "react-icons/fa6";
 interface RepositoryAreaProps {
   repositories: Repositories;
   selectedRepository: Repository | null;
-  onClick: React.Dispatch<React.SetStateAction<Repository | null>>;
+  onClick: (repository: Repository) => void;
 }
 
 const RepositoryArea = ({
@@ -59,7 +59,7 @@ const RepositoryArea = ({
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-d">
+      <div className="h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b">
         <Select
           defaultValue={filteredRepository}
           onValueChange={e => setFilteredRepository(e)}

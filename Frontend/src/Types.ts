@@ -12,7 +12,7 @@ export interface Repository {
 
 export interface File {
   id: number;
-  file: string;
+  name: string;
   path: string;
   extension: string;
   date: Date;
