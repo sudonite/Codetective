@@ -68,84 +68,89 @@ const CodeArea = ({
   return (
     <div className="h-screen flex flex-col box-border">
       <div className="h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b justify-between">
-        <h1 className="text-center">
-          <div className="ml-3 grow flex flex-row justify-start items-center">
-            <code className="relative rounded bg-muted px-[0.5rem] py-[0.1rem] font-mono text-lg font-semibold">
-              {file ? `${file?.path}${file?.name}.${file?.extension}` : ""}
-            </code>
-          </div>
-        </h1>
-        {codes.length > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button
-                variant="ghost"
-                className="flex items-center justify-between space-x-4"
-              >
+        <div>
+          {selectedCode && (
+            <h1 className="text-center">
+              <div className="ml-3 grow flex flex-row justify-start items-center">
+                <code className="relative rounded bg-muted px-[0.5rem] py-[0.1rem] font-mono text-lg font-semibold">
+                  {file ? `${file?.path}${file?.name}.${file?.extension}` : ""}
+                </code>
+              </div>
+            </h1>
+          )}
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger disabled={!selectedCode}>
+            <Button
+              disabled={!selectedCode}
+              variant="ghost"
+              className="flex items-center justify-between space-x-4"
+            >
+              {selectedCode && (
                 <StatusBadge status={selectedCode?.status ?? null} />
-                <IoMdSettings className="w-6 h-6" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>Options</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem disabled>
-                  <FaGit className="mr-2 h-4 w-4" />
-                  Open repository
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                  <TbBrandVscode className="mr-2 h-4 w-4" />
-                  Open in VSCode
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger>
-                  <FaShieldAlt className="mr-2 h-4 w-4" />
-                  Change status
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    <DropdownMenuCheckboxItem
-                      onCheckedChange={() => onStatusChange("fixed")}
-                      checked={selectedCode?.status === "fixed"}
-                    >
-                      <StatusBadge status="fixed" />
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem
-                      onCheckedChange={() => onStatusChange("vulnerable")}
-                      checked={selectedCode?.status === "vulnerable"}
-                    >
-                      <StatusBadge status="vulnerable" />
-                    </DropdownMenuCheckboxItem>
-                    <DropdownMenuCheckboxItem
-                      onCheckedChange={() => onStatusChange("false")}
-                      checked={selectedCode?.status === "false"}
-                    >
-                      <StatusBadge status="false" />
-                    </DropdownMenuCheckboxItem>
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuCheckboxItem
-                  checked={wordWrap}
-                  onCheckedChange={() => setWordWrap(!wordWrap)}
-                >
-                  Word Wrap
-                </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                  checked={lineNumbers}
-                  onCheckedChange={() => setLineNumbers(!lineNumbers)}
-                >
-                  Line Numbers
-                </DropdownMenuCheckboxItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+              )}
+              <IoMdSettings className="w-6 h-6" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>Options</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem disabled>
+                <FaGit className="mr-2 h-4 w-4" />
+                Open repository
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled>
+                <TbBrandVscode className="mr-2 h-4 w-4" />
+                Open in VSCode
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <FaShieldAlt className="mr-2 h-4 w-4" />
+                Change status
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  <DropdownMenuCheckboxItem
+                    onCheckedChange={() => onStatusChange("fixed")}
+                    checked={selectedCode?.status === "fixed"}
+                  >
+                    <StatusBadge status="fixed" />
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    onCheckedChange={() => onStatusChange("vulnerable")}
+                    checked={selectedCode?.status === "vulnerable"}
+                  >
+                    <StatusBadge status="vulnerable" />
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    onCheckedChange={() => onStatusChange("false")}
+                    checked={selectedCode?.status === "false"}
+                  >
+                    <StatusBadge status="false" />
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuCheckboxItem
+                checked={wordWrap}
+                onCheckedChange={() => setWordWrap(!wordWrap)}
+              >
+                Word Wrap
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={lineNumbers}
+                onCheckedChange={() => setLineNumbers(!lineNumbers)}
+              >
+                Line Numbers
+              </DropdownMenuCheckboxItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="grow">
         {selectedCode ? (
@@ -174,44 +179,50 @@ const CodeArea = ({
         )}
       </div>
       <div className="h-16 max-h-16 p-2 flex flex-row items-center border-t justify-between">
-        <div className="flex items-center w-1/2">
-          <Button
-            className="m-1"
-            variant="secondary"
-            size="icon"
-            disabled={codes.findIndex(obj => obj.id == selectedCode?.id) === 0}
-            onClick={() => handleStepper("prev")}
-          >
-            <RxChevronLeft className="h-6 w-6" />
-          </Button>
-          <Button
-            className="m-1"
-            variant="secondary"
-            size="icon"
-            disabled={
-              codes.findIndex(obj => obj.id == selectedCode?.id) ===
-              codes.length - 1
-            }
-            onClick={() => handleStepper("next")}
-          >
-            <RxChevronRight className="h-6 w-6" />
-          </Button>
-          <div className="m-2 text-lg font-semibold">
-            {`Code ${
-              codes.findIndex(obj => obj.id == selectedCode?.id) + 1
-            } of ${codes.length}`}
-          </div>
-        </div>
-        <div className="flex items-center w-1/2 space-x-2">
-          <Input
-            disabled
-            type="text"
-            placeholder="Ask AI: Why is this code vulnerable? Explain..."
-          />
-          <Button disabled variant="outline">
-            Send
-          </Button>
-        </div>
+        {selectedCode && (
+          <>
+            <div className="flex items-center w-1/2">
+              <Button
+                className="m-1"
+                variant="secondary"
+                size="icon"
+                disabled={
+                  codes.findIndex(obj => obj.id == selectedCode?.id) === 0
+                }
+                onClick={() => handleStepper("prev")}
+              >
+                <RxChevronLeft className="h-6 w-6" />
+              </Button>
+              <Button
+                className="m-1"
+                variant="secondary"
+                size="icon"
+                disabled={
+                  codes.findIndex(obj => obj.id == selectedCode?.id) ===
+                  codes.length - 1
+                }
+                onClick={() => handleStepper("next")}
+              >
+                <RxChevronRight className="h-6 w-6" />
+              </Button>
+              <div className="m-2 text-lg font-semibold">
+                {`Code ${
+                  codes.findIndex(obj => obj.id == selectedCode?.id) + 1
+                } of ${codes.length}`}
+              </div>
+            </div>
+            <div className="flex items-center w-1/2 space-x-2">
+              <Input
+                disabled
+                type="text"
+                placeholder="Ask AI: Why is this code vulnerable? Explain..."
+              />
+              <Button disabled variant="outline">
+                Send
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
