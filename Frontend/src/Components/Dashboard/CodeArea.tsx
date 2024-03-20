@@ -4,15 +4,8 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { Codes, File, Status, Code } from "@/Types";
 import { codeTheme } from "@/Consts";
 import { IoMdSettings } from "react-icons/io";
-
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/Components/UI/Pagination";
+import { FaGit, FaShieldAlt } from "react-icons/fa";
+import { TbBrandVscode } from "react-icons/tb";
 
 import {
   DropdownMenu,
@@ -25,12 +18,15 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuGroup,
+  DropdownMenuItem,
 } from "@/Components/UI/DropdownMenu";
 
 import StatusBadge from "@/Components/Dashboard/StatusBadge";
 import { Button } from "@/Components/UI/Button";
 import { ScrollArea, ScrollBar } from "@/Components/UI/ScrollArea";
-import { cn } from "@/Utils";
+import { RxChevronLeft, RxChevronRight } from "react-icons/rx";
+import { Input } from "@/Components/UI/Input";
 
 interface CodeAreaProps {
   codes: Codes;
@@ -49,8 +45,8 @@ const CodeArea = ({
 }: CodeAreaProps) => {
   const [lineNumbers, setLineNumbers] = useState(true);
   const [wordWrap, setWordWrap] = useState(false);
-  console.log(file);
-  const handlePagination = (step: "prev" | "next" | number) => {
+
+  const handleStepper = (step: "prev" | "next") => {
     if (selectedCode) {
       if (step === "prev") {
         const index = codes.findIndex(code => code.id === selectedCode.id);
@@ -74,9 +70,9 @@ const CodeArea = ({
       <div className="h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b justify-between">
         <h1 className="text-center">
           <div className="ml-3 grow flex flex-row justify-start items-center">
-            <h3 className="text-2xl font-semibold tracking-tight">
+            <code className="relative rounded bg-muted px-[0.5rem] py-[0.1rem] font-mono text-lg font-semibold">
               {file ? `${file?.path}${file?.name}.${file?.extension}` : ""}
-            </h3>
+            </code>
           </div>
         </h1>
         {codes.length > 0 && (
@@ -93,22 +89,21 @@ const CodeArea = ({
             <DropdownMenuContent>
               <DropdownMenuLabel>Options</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem
-                checked={wordWrap}
-                onCheckedChange={() => setWordWrap(!wordWrap)}
-              >
-                Word Wrap
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={lineNumbers}
-                onCheckedChange={() => setLineNumbers(!lineNumbers)}
-              >
-                Line Numbers
-              </DropdownMenuCheckboxItem>
+              <DropdownMenuGroup>
+                <DropdownMenuItem disabled>
+                  <FaGit className="mr-2 h-4 w-4" />
+                  Open repository
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled>
+                  <TbBrandVscode className="mr-2 h-4 w-4" />
+                  Open in VSCode
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <span>Change status</span>
+                  <FaShieldAlt className="mr-2 h-4 w-4" />
+                  Change status
                 </DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent>
@@ -133,6 +128,21 @@ const CodeArea = ({
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
               </DropdownMenuSub>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuCheckboxItem
+                  checked={wordWrap}
+                  onCheckedChange={() => setWordWrap(!wordWrap)}
+                >
+                  Word Wrap
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={lineNumbers}
+                  onCheckedChange={() => setLineNumbers(!lineNumbers)}
+                >
+                  Line Numbers
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
@@ -163,42 +173,45 @@ const CodeArea = ({
           </div>
         )}
       </div>
-      <div className="h-16 max-h-16 p-2 flex flex-row items-center border-t justify-center">
-        {codes.length > 1 && (
-          <Pagination className="flex justify-center">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  className="cursor-pointer"
-                  onClick={() => handlePagination("prev")}
-                />
-              </PaginationItem>
-              {codes?.map((code, index) => (
-                <PaginationItem key={code.id}>
-                  <PaginationLink
-                    className={cn(
-                      "cursor-pointer",
-                      `${
-                        selectedCode?.id === code?.id
-                          ? "bg-primary/50 hover:bg-primary/50"
-                          : ""
-                      }`
-                    )}
-                    onClick={() => handlePagination(code?.id)}
-                  >
-                    {index + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext
-                  className="cursor-pointer"
-                  onClick={() => handlePagination("next")}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        )}
+      <div className="h-16 max-h-16 p-2 flex flex-row items-center border-t justify-between">
+        <div className="flex items-center w-1/2">
+          <Button
+            className="m-1"
+            variant="secondary"
+            size="icon"
+            disabled={codes.findIndex(obj => obj.id == selectedCode?.id) === 0}
+            onClick={() => handleStepper("prev")}
+          >
+            <RxChevronLeft className="h-6 w-6" />
+          </Button>
+          <Button
+            className="m-1"
+            variant="secondary"
+            size="icon"
+            disabled={
+              codes.findIndex(obj => obj.id == selectedCode?.id) ===
+              codes.length - 1
+            }
+            onClick={() => handleStepper("next")}
+          >
+            <RxChevronRight className="h-6 w-6" />
+          </Button>
+          <div className="m-2 text-lg font-semibold">
+            {`Code ${
+              codes.findIndex(obj => obj.id == selectedCode?.id) + 1
+            } of ${codes.length}`}
+          </div>
+        </div>
+        <div className="flex items-center w-1/2 space-x-2">
+          <Input
+            disabled
+            type="text"
+            placeholder="Ask AI: Why is this code vulnerable? Explain..."
+          />
+          <Button disabled variant="outline">
+            Send
+          </Button>
+        </div>
       </div>
     </div>
   );

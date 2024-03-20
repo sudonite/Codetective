@@ -18,6 +18,11 @@ import {
   Status,
   Code,
 } from "@/Types";
+import {
+  updateCodeStatus,
+  updateFileStatus,
+  updateRepositoryStatus,
+} from "@/Utils";
 import { getRepositories, getFiles, getCodes, changeStatus } from "@/fakeAPI";
 
 const Dashboard = () => {
@@ -66,61 +71,25 @@ const Dashboard = () => {
     if (!selectedCode) return;
     const response = changeStatus(selectedCode.id, status);
     if (response?.status === 200) {
-      // Update the status of the selected code
-      const newCode = { ...selectedCode, status: status };
-      const newCodes = codes.map(code =>
-        code.id === selectedCode?.id ? newCode : code
-      );
+      const [newCode, newCodes] = updateCodeStatus(selectedCode, codes, status);
       setSelectedCode(newCode);
       setCodes(newCodes);
 
-      // Update the status of the selected file
       if (!selectedFile) return;
-      let fileStatus = selectedFile.status;
-      const fileVulnerable = newCodes.some(
-        code => code.status === "vulnerable"
+      const [newFile, newFiles] = updateFileStatus(
+        selectedFile,
+        files,
+        newCodes
       );
-
-      const fileFalse = newCodes.every(code => code.status === "false");
-
-      if (fileVulnerable) {
-        fileStatus = "vulnerable";
-      } else if (fileFalse) {
-        fileStatus = "false";
-      } else {
-        fileStatus = "fixed";
-      }
-
-      const newFile = { ...selectedFile, status: fileStatus };
-      const newFiles = files.map(file =>
-        file.id === selectedFile?.id ? newFile : file
-      );
-
       setSelectedFile(newFile);
       setFiles(newFiles);
 
-      // Update the status of the selected repository
       if (!selectedRepository) return;
-      let repositoryStatus = selectedRepository.status;
-      const repositoryVulnerable = newFiles.some(
-        file => file.status === "vulnerable"
+      const [newRepository, newRepositories] = updateRepositoryStatus(
+        selectedRepository,
+        repositories,
+        newFiles
       );
-
-      const repositoryFalse = newFiles.every(file => file.status === "false");
-
-      if (repositoryVulnerable) {
-        repositoryStatus = "vulnerable";
-      } else if (repositoryFalse) {
-        repositoryStatus = "false";
-      } else {
-        repositoryStatus = "fixed";
-      }
-
-      const newRepository = { ...selectedRepository, status: repositoryStatus };
-      const newRepositories = repositories.map(repository =>
-        repository.id === selectedRepository?.id ? newRepository : repository
-      );
-
       setSelectedRepository(newRepository);
       setRepositories(newRepositories);
     }
