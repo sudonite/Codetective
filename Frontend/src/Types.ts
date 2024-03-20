@@ -1,4 +1,4 @@
-export type Status = "clean" | "vulnerable" | "running";
+export type Status = "clean" | "vulnerable" | "running" | "fixed" | "false";
 export type Platform = "github" | "gitlab" | "gitea" | "bitbucket";
 
 export interface Repository {
@@ -15,6 +15,7 @@ export interface File {
   name: string;
   path: string;
   extension: string;
+  status: Status;
   date: Date;
 }
 
@@ -22,6 +23,7 @@ export interface Code {
   id: number;
   lineStart: number;
   code: string;
+  status: Status;
   date: Date;
 }
 

@@ -1,9 +1,9 @@
 import { useState } from "react";
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { Codes, File } from "@/Types";
+import { Codes, File, Status, Code } from "@/Types";
 import { codeTheme } from "@/Consts";
-import { LuFileDigit, LuWrapText } from "react-icons/lu";
+import { IoMdSettings } from "react-icons/io";
 
 import {
   Pagination,
@@ -15,35 +15,56 @@ import {
 } from "@/Components/UI/Pagination";
 
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/Components/UI/Tooltip";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "@/Components/UI/DropdownMenu";
 
-import { Toggle } from "@/Components/UI/Toggle";
+import StatusBadge from "@/Components/Dashboard/StatusBadge";
+import { Button } from "@/Components/UI/Button";
 import { ScrollArea, ScrollBar } from "@/Components/UI/ScrollArea";
 import { cn } from "@/Utils";
 
 interface CodeAreaProps {
   codes: Codes;
   file: File | null;
+  selectedCode: Code | null;
+  onCodeChange: (code: Code) => void;
+  onStatusChange: (status: Status) => void;
 }
 
-const CodeArea = ({ codes, file }: CodeAreaProps) => {
-  const [selectedCodeID, setSelectedCodeID] = useState<number>(1);
+const CodeArea = ({
+  codes,
+  file,
+  selectedCode,
+  onCodeChange,
+  onStatusChange,
+}: CodeAreaProps) => {
   const [lineNumbers, setLineNumbers] = useState(true);
   const [wordWrap, setWordWrap] = useState(false);
-
-  const handleCodeChange = (step: "prev" | "next") => {
-    console.log(selectedCodeID);
-    if (step === "prev") {
-      if (selectedCodeID > 1) {
-        setSelectedCodeID(selectedCodeID - 1);
-      }
-    } else if (step === "next") {
-      if (selectedCodeID < codes.length) {
-        setSelectedCodeID(selectedCodeID + 1);
+  console.log(file);
+  const handlePagination = (step: "prev" | "next" | number) => {
+    if (selectedCode) {
+      if (step === "prev") {
+        const index = codes.findIndex(code => code.id === selectedCode.id);
+        if (index > 0) {
+          onCodeChange(codes[index - 1]);
+        }
+      } else if (step === "next") {
+        const index = codes.findIndex(code => code.id === selectedCode.id);
+        if (index < codes.length - 1) {
+          onCodeChange(codes[index + 1]);
+        }
+      } else if (typeof step === "number") {
+        const code = codes.find(code => code.id === step);
+        if (code) onCodeChange(code);
       }
     }
   };
@@ -58,74 +79,98 @@ const CodeArea = ({ codes, file }: CodeAreaProps) => {
             </h3>
           </div>
         </h1>
-        <div className="space-x-2 mr-1">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Toggle
-                  variant="outline"
-                  className="h-10 w-10"
-                  defaultPressed={lineNumbers}
-                  onPressedChange={() => setLineNumbers(!lineNumbers)}
-                >
-                  <LuFileDigit className="h-4 w-4" />
-                </Toggle>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Line numbers</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger>
-                <Toggle
-                  variant="outline"
-                  className="h-10 w-10"
-                  defaultPressed={wordWrap}
-                  onPressedChange={() => setWordWrap(!wordWrap)}
-                >
-                  <LuWrapText className="h-4 w-4" />
-                </Toggle>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Word wrap</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+        {codes.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button
+                variant="ghost"
+                className="flex items-center justify-between space-x-4"
+              >
+                <StatusBadge status={selectedCode?.status ?? null} />
+                <IoMdSettings className="w-6 h-6" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Options</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuCheckboxItem
+                checked={wordWrap}
+                onCheckedChange={() => setWordWrap(!wordWrap)}
+              >
+                Word Wrap
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuCheckboxItem
+                checked={lineNumbers}
+                onCheckedChange={() => setLineNumbers(!lineNumbers)}
+              >
+                Line Numbers
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                  <span>Change status</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    <DropdownMenuCheckboxItem
+                      onCheckedChange={() => onStatusChange("fixed")}
+                      checked={selectedCode?.status === "fixed"}
+                    >
+                      <StatusBadge status="fixed" />
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      onCheckedChange={() => onStatusChange("vulnerable")}
+                      checked={selectedCode?.status === "vulnerable"}
+                    >
+                      <StatusBadge status="vulnerable" />
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      onCheckedChange={() => onStatusChange("false")}
+                      checked={selectedCode?.status === "false"}
+                    >
+                      <StatusBadge status="false" />
+                    </DropdownMenuCheckboxItem>
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
       <div className="grow">
-        {codes.length === 0 ? (
-          <div className="flex justify-center items-center h-full">
-            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-              Select file
-            </h3>
-          </div>
-        ) : (
+        {selectedCode ? (
           <ScrollArea className="w-full h-full rounded-lg">
+            {/* @TODO
+                Fix WordWrap
+            */}
             <SyntaxHighlighter
               wrapLongLines={wordWrap}
               showLineNumbers={lineNumbers}
-              startingLineNumber={codes?.[0]?.lineStart}
+              startingLineNumber={selectedCode?.lineStart}
               language="cpp"
               style={codeTheme as { [key: string]: React.CSSProperties }}
             >
-              {codes?.[selectedCodeID - 1]?.code}
+              {selectedCode.code}
             </SyntaxHighlighter>
             <ScrollBar orientation="horizontal" />
             <ScrollBar />
           </ScrollArea>
+        ) : (
+          <div className="flex justify-center items-center h-full">
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+              Select a file
+            </h3>
+          </div>
         )}
       </div>
-      <div className="h-16 max-h-16 p-2 flex flex-row items-center border-t">
+      <div className="h-16 max-h-16 p-2 flex flex-row items-center border-t justify-center">
         {codes.length > 1 && (
-          <Pagination>
+          <Pagination className="flex justify-center">
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
                   className="cursor-pointer"
-                  onClick={() => handleCodeChange("prev")}
+                  onClick={() => handlePagination("prev")}
                 />
               </PaginationItem>
               {codes?.map((code, index) => (
@@ -134,12 +179,12 @@ const CodeArea = ({ codes, file }: CodeAreaProps) => {
                     className={cn(
                       "cursor-pointer",
                       `${
-                        selectedCodeID === index + 1
+                        selectedCode?.id === code?.id
                           ? "bg-primary/50 hover:bg-primary/50"
                           : ""
                       }`
                     )}
-                    onClick={() => setSelectedCodeID(index + 1)}
+                    onClick={() => handlePagination(code?.id)}
                   >
                     {index + 1}
                   </PaginationLink>
@@ -148,7 +193,7 @@ const CodeArea = ({ codes, file }: CodeAreaProps) => {
               <PaginationItem>
                 <PaginationNext
                   className="cursor-pointer"
-                  onClick={() => handleCodeChange("next")}
+                  onClick={() => handlePagination("next")}
                 />
               </PaginationItem>
             </PaginationContent>

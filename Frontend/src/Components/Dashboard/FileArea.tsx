@@ -10,6 +10,7 @@ import { ScrollArea } from "@/Components/UI/ScrollArea";
 import { Input } from "@/Components/UI/Input";
 
 import { FaSearch } from "react-icons/fa";
+import StatusBadge from "@/Components/Dashboard/StatusBadge";
 
 interface FileAreaProps {
   files: Files;
@@ -55,11 +56,14 @@ const FileArea = ({ files, selectedFile, onClick }: FileAreaProps) => {
                   )}
                   onClick={() => onClick(file)}
                 >
-                  <div className="flex flex-row justify-start items-center gap-2">
-                    <FileIcon extension={file.extension} />
-                    <h4 className="scroll-m-20 text-md font-semibold tracking-tight">
-                      {file.name}.{file.extension}
-                    </h4>
+                  <div className="flex flew-row justify-between items-center">
+                    <div className="flex flex-row justify-start items-center gap-2">
+                      <FileIcon extension={file.extension} />
+                      <h4 className="scroll-m-20 text-md font-semibold tracking-tight">
+                        {file.name}.{file.extension}
+                      </h4>
+                    </div>
+                    <StatusBadge status={file.status} />
                   </div>
                 </Card>
               ))}

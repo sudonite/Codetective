@@ -3,8 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { Tabs, TabsList, TabsTrigger } from "@/Components/UI/Tabs";
 
-import { Badge } from "@/Components/UI/Badge";
-
 import { Button } from "@/Components/UI/Button";
 import { ScrollArea } from "@/Components/UI/ScrollArea";
 import {
@@ -30,13 +28,14 @@ import {
 
 import RepositoryIcon from "@/Components/Dashboard/RepositoryIcon";
 
-import { cn, capitalizeFirstLetter } from "@/Utils";
+import { cn } from "@/Utils";
 import { Repositories, Repository } from "@/Types";
 import ThemeChanger from "@/Components/Theme/ThemeChanger";
 
 import { MdLogout } from "react-icons/md";
 import { IoMdSettings } from "react-icons/io";
 import { FaShieldHalved, FaPalette } from "react-icons/fa6";
+import StatusBadge from "@/Components/Dashboard/StatusBadge";
 
 interface RepositoryAreaProps {
   repositories: Repositories;
@@ -132,17 +131,7 @@ const RepositoryArea = ({
                       </CardDescription>
                     </div>
                     <div>
-                      <Badge
-                        variant={
-                          repository.status == "vulnerable"
-                            ? "destructive"
-                            : repository.status === "clean"
-                            ? "default"
-                            : "secondary"
-                        }
-                      >
-                        {capitalizeFirstLetter(repository.status)}
-                      </Badge>
+                      <StatusBadge status={repository.status} />
                     </div>
                   </CardHeader>
                 </Card>
