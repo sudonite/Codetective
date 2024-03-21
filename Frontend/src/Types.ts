@@ -1,5 +1,6 @@
 export type Status = "clean" | "vulnerable" | "running" | "fixed" | "false";
 export type Platform = "github" | "gitlab" | "gitea" | "bitbucket";
+export type Sender = "user" | "bot";
 
 export interface Repository {
   id: number;
@@ -27,6 +28,14 @@ export interface Code {
   date: Date;
 }
 
+export interface ChatMessage {
+  id: number;
+  message: string;
+  sender: Sender;
+  date: Date;
+}
+
 export type Repositories = Repository[];
 export type Files = File[];
 export type Codes = Code[];
+export type ChatMessages = ChatMessage[];

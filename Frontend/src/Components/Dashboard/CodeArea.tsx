@@ -1,32 +1,16 @@
 import { useState } from "react";
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { Codes, File, Status, Code } from "@/Types";
-import { codeTheme } from "@/Consts";
-import { IoMdSettings } from "react-icons/io";
-import { FaGit, FaShieldAlt } from "react-icons/fa";
-import { TbBrandVscode } from "react-icons/tb";
+import { Codes, File, Status, Code, ChatMessages, ChatMessage } from "@/Types";
+import { codeTheme, welcomeMessage } from "@/Consts";
+import { receiveAnswer } from "@/fakeAPI";
 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  DropdownMenuCheckboxItem,
-  DropdownMenuPortal,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-} from "@/Components/UI/DropdownMenu";
-
-import StatusBadge from "@/Components/Dashboard/StatusBadge";
 import { Button } from "@/Components/UI/Button";
 import { ScrollArea, ScrollBar } from "@/Components/UI/ScrollArea";
 import { RxChevronLeft, RxChevronRight } from "react-icons/rx";
 import { Input } from "@/Components/UI/Input";
+import CodeDropdown from "@/Components/Dashboard/CodeDropdown";
+import CodeChat from "@/Components/Dashboard/CodeChat";
 
 interface CodeAreaProps {
   codes: Codes;
@@ -43,8 +27,12 @@ const CodeArea = ({
   onCodeChange,
   onStatusChange,
 }: CodeAreaProps) => {
-  const [lineNumbers, setLineNumbers] = useState(true);
-  const [wordWrap, setWordWrap] = useState(false);
+  const [lineNumbers, setLineNumbers] = useState<boolean>(true);
+  const [wordWrap, setWordWrap] = useState<boolean>(false);
+  const [chatMessages, setChatMessages] = useState<ChatMessages>([
+    welcomeMessage,
+  ]);
+  const [chatInput, setChatInput] = useState<string>("");
 
   const handleStepper = (step: "prev" | "next") => {
     if (selectedCode) {
@@ -65,6 +53,19 @@ const CodeArea = ({
     }
   };
 
+  const handleChat = () => {
+    const newMessage: ChatMessage = {
+      id: chatMessages.length + 1,
+      message: chatInput,
+      sender: "user",
+      date: new Date(),
+    };
+    setChatInput("");
+    const response = receiveAnswer();
+    if (response?.status === 200) {
+      setChatMessages([...chatMessages, newMessage, response?.data]);
+    }
+  };
   return (
     <div className="h-screen flex flex-col box-border">
       <div className="h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b justify-between">
@@ -79,78 +80,14 @@ const CodeArea = ({
             </h1>
           )}
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger disabled={!selectedCode}>
-            <Button
-              disabled={!selectedCode}
-              variant="ghost"
-              className="flex items-center justify-between space-x-4"
-            >
-              {selectedCode && (
-                <StatusBadge status={selectedCode?.status ?? null} />
-              )}
-              <IoMdSettings className="w-6 h-6" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>Options</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem disabled>
-                <FaGit className="mr-2 h-4 w-4" />
-                Open repository
-              </DropdownMenuItem>
-              <DropdownMenuItem disabled>
-                <TbBrandVscode className="mr-2 h-4 w-4" />
-                Open in VSCode
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger>
-                <FaShieldAlt className="mr-2 h-4 w-4" />
-                Change status
-              </DropdownMenuSubTrigger>
-              <DropdownMenuPortal>
-                <DropdownMenuSubContent>
-                  <DropdownMenuCheckboxItem
-                    onCheckedChange={() => onStatusChange("fixed")}
-                    checked={selectedCode?.status === "fixed"}
-                  >
-                    <StatusBadge status="fixed" />
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    onCheckedChange={() => onStatusChange("vulnerable")}
-                    checked={selectedCode?.status === "vulnerable"}
-                  >
-                    <StatusBadge status="vulnerable" />
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    onCheckedChange={() => onStatusChange("false")}
-                    checked={selectedCode?.status === "false"}
-                  >
-                    <StatusBadge status="false" />
-                  </DropdownMenuCheckboxItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuPortal>
-            </DropdownMenuSub>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuCheckboxItem
-                checked={wordWrap}
-                onCheckedChange={() => setWordWrap(!wordWrap)}
-              >
-                Word Wrap
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={lineNumbers}
-                onCheckedChange={() => setLineNumbers(!lineNumbers)}
-              >
-                Line Numbers
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <CodeDropdown
+          selectedCode={selectedCode}
+          wordWrap={wordWrap}
+          lineNumbers={lineNumbers}
+          setWordWrap={setWordWrap}
+          setLineNumbers={setLineNumbers}
+          onStatusChange={onStatusChange}
+        />
       </div>
       <div className="grow">
         {selectedCode ? (
@@ -213,13 +150,17 @@ const CodeArea = ({
             </div>
             <div className="flex items-center w-1/2 space-x-2">
               <Input
-                disabled
                 type="text"
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
                 placeholder="Ask AI: Why is this code vulnerable? Explain..."
               />
-              <Button disabled variant="outline">
-                Send
-              </Button>
+              <CodeChat
+                chatInput={chatInput}
+                chatMessages={chatMessages}
+                handleChat={handleChat}
+                setChatInput={setChatInput}
+              />
             </div>
           </>
         )}

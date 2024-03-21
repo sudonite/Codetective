@@ -1,4 +1,4 @@
-import { Files, Repositories, Codes, Status } from "@/Types";
+import { Files, Repositories, Codes, Status, ChatMessage } from "@/Types";
 
 const repositories: Repositories = [
   {
@@ -675,6 +675,14 @@ const fileCodes: number[][] = [
   [20, 40],
 ];
 
+const chatMessage: ChatMessage = {
+  id: 1,
+  message:
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  sender: "bot",
+  date: new Date(),
+};
+
 export const getRepositories = (): { data: Repositories; status: number } => {
   return { data: repositories, status: 200 };
 };
@@ -695,4 +703,8 @@ export const changeStatus = (id: number, status: Status) => {
   const code = codes.find(code => code.id === id);
   if (code) code.status = status;
   return { status: 200 };
+};
+
+export const receiveAnswer = () => {
+  return { data: chatMessage, status: 200 };
 };

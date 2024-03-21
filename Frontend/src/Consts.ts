@@ -1,3 +1,5 @@
+import { ChatMessage } from "@/Types";
+
 export const themeSelectors = [
   "light_zinc",
   "dark_zinc",
@@ -310,4 +312,11 @@ export const codeTheme = {
   italic: {
     fontStyle: "italic",
   },
+};
+
+export const welcomeMessage: ChatMessage = {
+  id: 0,
+  message: "Hi, how can I help you today?",
+  sender: "bot",
+  date: new Date(),
 };
