@@ -1,4 +1,13 @@
-import { Files, Repositories, Codes, Status, ChatMessage } from "@/Types";
+import {
+  Files,
+  Repositories,
+  Codes,
+  Status,
+  ChatMessage,
+  GitKeys,
+  AppKeys,
+} from "@/Types";
+import { generateRandomDate } from "@/Utils";
 
 const repositories: Repositories = [
   {
@@ -683,6 +692,60 @@ const chatMessage: ChatMessage = {
   date: new Date(),
 };
 
+const gitKeys: GitKeys = [
+  {
+    id: 1,
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJsJerWmr8oqTh43dnEM78UH24jKwaKDyfI2VPrLu5wY sudonite@codetective",
+    platform: "github",
+    date: generateRandomDate(),
+  },
+  {
+    id: 2,
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFlLnIKfwAj+weYn7hA81DBHmIa6Z8+UTYy1/2or6YIC sudonite@codetective",
+    platform: "gitlab",
+    date: generateRandomDate(),
+  },
+  {
+    id: 3,
+    key: null,
+    platform: "gitea",
+    date: generateRandomDate(),
+  },
+  {
+    id: 4,
+    key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBVPUbPfSuVA5BIu+4Uma1gW1eWPzBiHzslVWmVFZcK9 sudonite@codetective",
+    platform: "bitbucket",
+    date: generateRandomDate(),
+  },
+];
+
+const appKeys: AppKeys = [
+  {
+    id: 1,
+    key: null,
+    platform: "colab",
+    date: generateRandomDate(),
+  },
+  {
+    id: 2,
+    key: "35b997af-1644-4484-b456-f7dc1e1ebe3c",
+    platform: "kaggle",
+    date: generateRandomDate(),
+  },
+  {
+    id: 3,
+    key: "19f20913-8712-4e52-a0f5-e11e0ac678bd",
+    platform: "gpt",
+    date: generateRandomDate(),
+  },
+  {
+    id: 4,
+    key: "5fae1c9b-5ee6-4835-8248-450ac0b7d5e9",
+    platform: "perplexity",
+    date: generateRandomDate(),
+  },
+];
+
 export const getRepositories = (): { data: Repositories; status: number } => {
   return { data: repositories, status: 200 };
 };
@@ -699,7 +762,10 @@ export const getCodes = (id: number): { data: Codes; status: number } => {
   return { data: codes.filter(code => codeIds.includes(code.id)), status: 200 };
 };
 
-export const changeStatus = (id: number, status: Status) => {
+export const changeStatus = (
+  id: number,
+  status: Status
+): { status: number } => {
   const code = codes.find(code => code.id === id);
   if (code) code.status = status;
   return { status: 200 };
@@ -707,4 +773,12 @@ export const changeStatus = (id: number, status: Status) => {
 
 export const receiveAnswer = () => {
   return { data: chatMessage, status: 200 };
+};
+
+export const getGitKeys = (): { data: GitKeys; status: number } => {
+  return { data: gitKeys, status: 200 };
+};
+
+export const getAppKeys = (): { data: AppKeys; status: number } => {
+  return { data: appKeys, status: 200 };
 };

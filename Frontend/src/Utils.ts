@@ -14,6 +14,12 @@ export const cn = (...inputs: ClassValue[]) => {
   return twMerge(clsx(inputs));
 };
 
+export const generateRandomDate = () => {
+  return new Date(
+    Date.now() + Math.floor(Math.random() * (365 * 24 * 60 * 60 * 1000))
+  );
+};
+
 export const formatDate = (input: string | number): string => {
   const date = new Date(input);
   return date.toLocaleDateString("en-US", {

@@ -155,7 +155,7 @@ const RepositoryArea = ({
             </DropdownMenuContent>
           </DropdownMenu>
           <Button variant="ghost" size="icon" asChild>
-            <Link to="/settings">
+            <Link to="/settings/profile">
               <IoMdSettings className="h-4 w-4" />
             </Link>
           </Button>
