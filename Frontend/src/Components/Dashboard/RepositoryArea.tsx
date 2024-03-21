@@ -31,10 +31,11 @@ import RepositoryIcon from "@/Components/Dashboard/RepositoryIcon";
 import { cn } from "@/Utils";
 import { Repositories, Repository } from "@/Types";
 import ThemeChanger from "@/Components/Theme/ThemeChanger";
+import AnalyzeDrawer from "@/Components/Dashboard/Analyze/AnalyzeDrawer";
 
 import { MdLogout } from "react-icons/md";
 import { IoMdSettings } from "react-icons/io";
-import { FaShieldHalved, FaPalette } from "react-icons/fa6";
+import { FaPalette } from "react-icons/fa6";
 import StatusBadge from "@/Components/Dashboard/StatusBadge";
 
 interface RepositoryAreaProps {
@@ -140,9 +141,7 @@ const RepositoryArea = ({
         )}
       </div>
       <div className="h-16 max-h-16 p-2 flex flex-row items-center justify-between border-t">
-        <Button variant="secondary">
-          <FaShieldHalved className="mr-2 h-4 w-4" /> Scan code
-        </Button>
+        <AnalyzeDrawer />
         <div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

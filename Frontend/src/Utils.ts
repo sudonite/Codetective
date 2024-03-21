@@ -43,6 +43,9 @@ export const updateCodeStatus = (
   return [newCode, newCodes];
 };
 
+export const delay = (ms: number) =>
+  new Promise(resolve => setTimeout(resolve, ms));
+
 /**
  * @TODO Refactor to generic function
  */
