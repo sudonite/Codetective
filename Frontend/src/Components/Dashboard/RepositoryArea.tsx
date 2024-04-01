@@ -112,7 +112,10 @@ const RepositoryArea = ({
                   (filteredCategory === "vulnerable" &&
                     repo.status === StatusType.Vulnerable)
               )
-              .sort((a: any, b: any) => b.date - a.date)
+              .sort(
+                (a: any, b: any) =>
+                  new Date(b.date).getTime() - new Date(a.date).getTime()
+              )
               .map(repository => (
                 <Card
                   key={repository.id}
