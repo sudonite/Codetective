@@ -39,6 +39,7 @@ const FileArea = ({ files, selectedFile, onClick }: FileAreaProps) => {
               .filter(file =>
                 file.name.toLowerCase().includes(searchedFilename.toLowerCase())
               )
+              .sort((a, b) => a.name.localeCompare(b.name))
               .map(file => (
                 <Card
                   key={file.id}
