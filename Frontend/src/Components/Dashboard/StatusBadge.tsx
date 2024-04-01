@@ -1,21 +1,33 @@
 import { Badge } from "@/Components/UI/Badge";
-import { Status } from "@/Types";
-import { capitalizeFirstLetter } from "@/Utils";
+import { StatusType } from "@/Types";
 
-const StatusBadge = ({ status }: { status: Status | null }) => {
+const statusToString = (status: StatusType | null) => {
+  switch (status) {
+    case StatusType.Clean:
+      return "Clean";
+    case StatusType.Vulnerable:
+      return "Vulnerable";
+    case StatusType.Running:
+      return "Running";
+    case StatusType.Fixed:
+      return "Fixed";
+    case StatusType.FalsePositive:
+      return "False Positive";
+  }
+};
+
+const StatusBadge = ({ status }: { status: StatusType | null }) => {
   return (
     <Badge
       variant={
-        status == "vulnerable"
+        status == StatusType.Vulnerable
           ? "destructive"
-          : status === "clean"
+          : status === StatusType.Clean
           ? "default"
           : "secondary"
       }
     >
-      {capitalizeFirstLetter(
-        status ? (status == "false" ? "false positive" : status) : ""
-      )}
+      {statusToString(status)}
     </Badge>
   );
 };

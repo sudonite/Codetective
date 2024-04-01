@@ -1,14 +1,27 @@
-export type Status = "clean" | "vulnerable" | "running" | "fixed" | "false";
-export type GitPlatform = "github" | "gitlab" | "gitea" | "bitbucket";
 export type AppPlatform = "colab" | "kaggle" | "gpt" | "perplexity";
 export type Sender = "user" | "bot";
+
+export enum StatusType {
+  Clean = 0,
+  Vulnerable = 1,
+  Running = 2,
+  Fixed = 3,
+  FalsePositive = 4,
+}
+
+export enum GitPlatformType {
+  Github = 0,
+  Gitlab = 1,
+  Gitea = 2,
+  Bitbucket = 3,
+}
 
 export interface Repository {
   id: number;
   name: string;
   url: string;
-  status: Status;
-  platform: GitPlatform;
+  status: StatusType;
+  platform: GitPlatformType;
   date: Date;
 }
 
@@ -17,7 +30,7 @@ export interface File {
   name: string;
   path: string;
   extension: string;
-  status: Status;
+  status: StatusType;
   date: Date;
 }
 
@@ -25,7 +38,7 @@ export interface Code {
   id: number;
   lineStart: number;
   code: string;
-  status: Status;
+  status: StatusType;
   date: Date;
 }
 
@@ -39,7 +52,7 @@ export interface ChatMessage {
 export interface GitKey {
   id: number;
   key: string | null;
-  platform: GitPlatform;
+  platform: GitPlatformType;
   date: Date;
 }
 

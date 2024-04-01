@@ -5,22 +5,45 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaArrowLeft } from "react-icons/fa6";
 import { AiOutlineLoading } from "react-icons/ai";
 
+import { LoginAPI } from "@/API";
+
 import { Button } from "@/Components/UI/Button";
 import { Input } from "@/Components/UI/Input";
 import { Checkbox } from "@/Components/UI/Checkbox";
 
 import AuthLayout from "@/Components/Auth/AuthLayout";
+import { useToast } from "@/Components/UI/useToast";
 
 const Login = () => {
+  const { toast } = useToast();
   const navigate = useNavigate();
-  const [loading, _] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const monthRef = useRef<HTMLButtonElement>(null);
 
-  const handleLogin = () => {
-    navigate("/dashboard");
+  const handleLogin = async () => {
+    const data = {
+      email: emailRef.current?.value,
+      password: passwordRef.current?.value,
+    };
+    setLoading(true);
+    const response = await LoginAPI(data);
+    setLoading(false);
+    if (response.status === 200) {
+      navigate("/dashboard");
+    } else if (response.status === 400) {
+      toast({
+        title: "Error",
+        description: "Invalid email or password",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "An error occurred",
+      });
+    }
   };
 
   return (

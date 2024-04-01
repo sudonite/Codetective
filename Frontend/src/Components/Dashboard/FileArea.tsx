@@ -33,13 +33,7 @@ const FileArea = ({ files, selectedFile, onClick }: FileAreaProps) => {
         />
       </div>
       <div className="grow">
-        {files.length < 1 ? (
-          <div className="flex justify-center items-center h-full">
-            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-              No files found
-            </h3>
-          </div>
-        ) : (
+        {files && files.length > 0 ? (
           <ScrollArea className="w-full h-[calc(100vh-8rem)] rounded-lg">
             {files
               .filter(file =>
@@ -68,6 +62,12 @@ const FileArea = ({ files, selectedFile, onClick }: FileAreaProps) => {
                 </Card>
               ))}
           </ScrollArea>
+        ) : (
+          <div className="flex justify-center items-center h-full">
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+              No files found
+            </h3>
+          </div>
         )}
       </div>
       <div className="h-16 max-h-16 p-2 flex flex-row items-center justify-between border-t"></div>

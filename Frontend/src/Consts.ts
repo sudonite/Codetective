@@ -1,5 +1,9 @@
 import { ChatMessage } from "@/Types";
 
+export const domain =
+  document.domain === "localhost" ? "http://localhost:8000" : document.domain;
+export const API = domain + "/api/v1";
+
 export const themeSelectors = [
   "light_zinc",
   "dark_zinc",

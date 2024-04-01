@@ -1,9 +1,12 @@
 import { useState, useRef } from "react";
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { FaArrowLeft } from "react-icons/fa6";
 import { AiOutlineLoading } from "react-icons/ai";
+
+import { RegisterAPI } from "@/API";
+import { useToast } from "@/Components/UI/useToast";
 
 import { Button } from "@/Components/UI/Button";
 import { Input } from "@/Components/UI/Input";
@@ -12,15 +15,63 @@ import { Checkbox } from "@/Components/UI/Checkbox";
 import AuthLayout from "@/Components/Auth/AuthLayout";
 
 const Register = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  const firstNameRef = useRef<HTMLInputElement>(null);
+  const lastNameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const passwordAgainRef = useRef<HTMLInputElement>(null);
   const termsRef = useRef<HTMLButtonElement>(null);
 
-  const handleRegister = () => {
-    setLoading(true);
+  const handleRegister = async () => {
+    const firstName = firstNameRef.current?.value;
+    const lastName = lastNameRef.current?.value;
+    const email = emailRef.current?.value;
+    const password = passwordRef.current?.value;
+    const passwordAgain = passwordAgainRef.current?.value;
+    const terms = termsRef.current?.dataset?.state == "checked";
+
+    if (!firstName || !lastName || !email || !password || !passwordAgain) {
+      toast({
+        title: "Error",
+        description: "Please fill all the fields",
+      });
+    } else if (password !== passwordAgain) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+      });
+    } else if (!terms) {
+      toast({
+        title: "Error",
+        description: "Please agree to the terms",
+      });
+    } else {
+      const data = {
+        firstName,
+        lastName,
+        email,
+        password,
+      };
+      setLoading(true);
+      const response = await RegisterAPI(data);
+      setLoading(false);
+      if (response.status === 200) {
+        toast({
+          title: "Success",
+          description: "Account created successfully",
+        });
+        navigate("/auth/login");
+      } else {
+        toast({
+          title: "Error",
+          description: "Something went wrong",
+        });
+      }
+    }
   };
 
   return (
@@ -46,6 +97,22 @@ const Register = () => {
           <p className="text-sm text-muted-foreground">
             Setting up an account takes less than a minute
           </p>
+          <div className="flex flex-row space-x-2">
+            <Input
+              id="firstName"
+              placeholder="First Name"
+              type="text"
+              ref={firstNameRef}
+              disabled={loading}
+            />
+            <Input
+              id="lastName"
+              placeholder="Last Name"
+              type="text"
+              ref={lastNameRef}
+              disabled={loading}
+            />
+          </div>
           <Input
             id="email"
             placeholder="name@example.com"

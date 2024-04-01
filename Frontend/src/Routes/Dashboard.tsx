@@ -15,7 +15,7 @@ import {
   Files,
   File,
   Codes,
-  Status,
+  StatusType,
   Code,
 } from "@/Types";
 import {
@@ -23,9 +23,13 @@ import {
   updateFileStatus,
   updateRepositoryStatus,
 } from "@/Utils";
-import { getRepositories, getFiles, getCodes, changeStatus } from "@/fakeAPI";
+import { changeStatus } from "@/fakeAPI";
+import { GetRepositoriesAPI, GetFilesAPI, GetCodesAPI } from "@/API";
+import { useToast } from "@/Components/UI/useToast";
 
 const Dashboard = () => {
+  const { toast } = useToast();
+
   const [repositories, setRepositories] = useState<Repositories>([]);
   const [selectedRepository, setSelectedRepository] =
     useState<Repository | null>(null);
@@ -37,14 +41,21 @@ const Dashboard = () => {
   const [selectedCode, setSelectedCode] = useState<Code | null>(null);
 
   useEffect(() => {
-    const response = getRepositories();
-    if (response?.status === 200) {
-      setRepositories(response?.data);
-    }
+    (async () => {
+      const response = await GetRepositoriesAPI();
+      if (response?.status === 200) {
+        setRepositories(response?.data);
+      } else {
+        toast({
+          title: "Error",
+          description: "An error occurred",
+        });
+      }
+    })();
   }, []);
 
-  const handleSelectRepository = (repository: Repository) => {
-    const response = getFiles(repository.id);
+  const handleSelectRepository = async (repository: Repository) => {
+    const response = await GetFilesAPI(repository.id);
     if (response?.status === 200) {
       setSelectedRepository(repository);
       setFiles(response?.data);
@@ -54,8 +65,8 @@ const Dashboard = () => {
     }
   };
 
-  const handleSelectFile = (file: File) => {
-    const response = getCodes(file.id);
+  const handleSelectFile = async (file: File) => {
+    const response = await GetCodesAPI(file.id);
     if (response?.status === 200) {
       setSelectedFile(file);
       setCodes(response?.data);
@@ -67,7 +78,7 @@ const Dashboard = () => {
     setSelectedCode(code);
   };
 
-  const handleStatusChange = (status: Status) => {
+  const handleStatusChange = (status: StatusType) => {
     if (!selectedCode) return;
     const response = changeStatus(selectedCode.id, status);
     if (response?.status === 200) {

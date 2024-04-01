@@ -29,6 +29,14 @@ func NewError(code int, err string) Error {
 		Err:  err,
 	}
 }
+
+func ErrUnAuthorized() Error {
+	return Error{
+		Code: http.StatusUnauthorized,
+		Err:  "unauthorized request",
+	}
+}
+
 func ErrBadRequest() Error {
 	return Error{
 		Code: http.StatusBadRequest,

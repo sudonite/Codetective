@@ -49,7 +49,9 @@ func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
-	userID := c.Params("id")
+	var (
+		userID = c.Params("id")
+	)
 	if err := h.userStore.DeleteUser(c.Context(), userID); err != nil {
 		return err
 	}
@@ -57,7 +59,9 @@ func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
 }
 
 func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
-	var params types.CreateUserParams
+	var (
+		params types.CreateUserParams
+	)
 	if err := c.BodyParser(&params); err != nil {
 		return ErrBadRequest()
 	}

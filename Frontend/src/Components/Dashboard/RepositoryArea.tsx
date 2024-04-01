@@ -29,7 +29,7 @@ import {
 import RepositoryIcon from "@/Components/Dashboard/RepositoryIcon";
 
 import { cn } from "@/Utils";
-import { Repositories, Repository } from "@/Types";
+import { Repositories, Repository, StatusType } from "@/Types";
 import ThemeChanger from "@/Components/Theme/ThemeChanger";
 import AnalyzeDrawer from "@/Components/Dashboard/Analyze/AnalyzeDrawer";
 
@@ -52,8 +52,9 @@ const RepositoryArea = ({
   const navigate = useNavigate();
   const [filteredRepository, setFilteredRepository] = useState<string>("all");
   const [filteredCategory, setFilteredCategory] = useState<string>("all");
-
+  console.log(repositories);
   const handleLogout = () => {
+    localStorage.removeItem("jwtToken");
     navigate("/");
   };
 
@@ -107,7 +108,9 @@ const RepositoryArea = ({
               )
               .filter(
                 repo =>
-                  filteredCategory === "all" || repo.status === filteredCategory
+                  filteredCategory === "all" ||
+                  (filteredCategory === "vulnerable" &&
+                    repo.status === StatusType.Vulnerable)
               )
               .sort((a: any, b: any) => b.date - a.date)
               .map(repository => (
@@ -128,7 +131,7 @@ const RepositoryArea = ({
                     <div className="grow">
                       <CardTitle>{repository.name}</CardTitle>
                       <CardDescription className="text-md mt-2 w-full">
-                        {repository.date.toDateString()}
+                        {new Date(repository.date).toDateString()}
                       </CardDescription>
                     </div>
                     <div>

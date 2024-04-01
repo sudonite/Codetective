@@ -1,4 +1,4 @@
-import { Platform } from "@/Types";
+import { GitPlatformType } from "@/Types";
 import {
   SiBitbucket,
   SiGithub,
@@ -7,15 +7,15 @@ import {
   SiGit,
 } from "react-icons/si";
 
-const RepositoryIcon = ({ platform }: { platform: Platform }) => {
+const RepositoryIcon = ({ platform }: { platform: GitPlatformType }) => {
   switch (platform) {
-    case "github":
+    case GitPlatformType.Github:
       return <SiGithub />;
-    case "gitlab":
+    case GitPlatformType.Gitlab:
       return <SiGitlab />;
-    case "gitea":
+    case GitPlatformType.Gitea:
       return <SiGitea />;
-    case "bitbucket":
+    case GitPlatformType.Bitbucket:
       return <SiBitbucket />;
     default:
       return <SiGit />;
