@@ -25,15 +25,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	userStore := db.NewMongoUserStore(client)
-	userHandler := api.NewUserHandler(userStore)
-	authHandler := api.NewAuthHandler(userStore)
-	repositoryStore := db.NewMongoRepositoryStore(client)
-	repositoryHandler := api.NewRepositoryHandler(repositoryStore)
-	fileStore := db.NewMongoFileStore(client)
-	fileHandler := api.NewFileHandler(fileStore)
-	codeStore := db.NewMongoCodeStore(client)
-	codeHandler := api.NewCodeHandler(codeStore)
+	var (
+		userStore       = db.NewMongoUserStore(client)
+		codeStore       = db.NewMongoCodeStore(client)
+		fileStore       = db.NewMongoFileStore(client)
+		repositoryStore = db.NewMongoRepositoryStore(client)
+		store           = &db.Store{
+			User:       userStore,
+			Repository: repositoryStore,
+			File:       fileStore,
+			Code:       codeStore,
+		}
+		authHandler       = api.NewAuthHandler(userStore)
+		userHandler       = api.NewUserHandler(userStore)
+		codeHandler       = api.NewCodeHandler(store)
+		fileHandler       = api.NewFileHandler(fileStore)
+		repositoryHandler = api.NewRepositoryHandler(repositoryStore)
+	)
 
 	app := fiber.New(config)
 	app.Use(cors.New())

@@ -14,8 +14,9 @@ const fileColl = "file"
 
 type FileStore interface {
 	InsertFile(context.Context, *types.File) (*types.File, error)
-	Update(context.Context, Map, Map) error
+	UpdateFile(context.Context, Map, types.UpdateFileParams) error
 	GetFilesByRepositoryID(context.Context, string) ([]*types.File, error)
+	GetFileByID(context.Context, string) (*types.File, error)
 }
 
 type MongoFileStore struct {
@@ -40,9 +41,18 @@ func (s *MongoFileStore) InsertFile(ctx context.Context, file *types.File) (*typ
 	return file, nil
 }
 
-func (s *MongoFileStore) Update(ctx context.Context, filter Map, update Map) error {
-	_, err := s.coll.UpdateOne(ctx, filter, update)
-	return err
+func (s *MongoFileStore) UpdateFile(ctx context.Context, filter Map, params types.UpdateFileParams) error {
+	oid, err := primitive.ObjectIDFromHex(filter["_id"].(string))
+	if err != nil {
+		return err
+	}
+	filter["_id"] = oid
+	update := bson.M{"$set": params.ToBSON()}
+	_, err = s.coll.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *MongoFileStore) GetFilesByRepositoryID(ctx context.Context, id string) ([]*types.File, error) {
@@ -59,4 +69,17 @@ func (s *MongoFileStore) GetFilesByRepositoryID(ctx context.Context, id string) 
 		return nil, err
 	}
 	return files, nil
+}
+
+func (s *MongoFileStore) GetFileByID(ctx context.Context, id string) (*types.File, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	resp := s.coll.FindOne(ctx, bson.M{"_id": oid})
+	var file *types.File
+	if err := resp.Decode(&file); err != nil {
+		return nil, err
+	}
+	return file, nil
 }

@@ -7,7 +7,7 @@ import {
   Files,
   Repositories,
   Repository,
-  Status,
+  StatusType,
 } from "@/Types";
 
 export const cn = (...inputs: ClassValue[]) => {
@@ -36,7 +36,7 @@ export const capitalizeFirstLetter = (string: string) => {
 export const updateCodeStatus = (
   code: Code,
   codes: Codes,
-  status: Status
+  status: StatusType
 ): [Code, Codes] => {
   const newCode = { ...code, status: status };
   const newCodes = codes.map(c => (c.id === code?.id ? newCode : c));
@@ -56,15 +56,15 @@ export const updateFileStatus = (
   codes: Codes
 ): [File, Files] => {
   let fileStatus = file.status;
-  const fileVulnerable = codes.some(c => c.status === "vulnerable");
-  const fileFalse = codes.every(c => c.status === "false");
+  const fileVulnerable = codes.some(c => c.status === StatusType.Vulnerable);
+  const fileFalse = codes.every(c => c.status === StatusType.FalsePositive);
 
   if (fileVulnerable) {
-    fileStatus = "vulnerable";
+    fileStatus = StatusType.Vulnerable;
   } else if (fileFalse) {
-    fileStatus = "false";
+    fileStatus = StatusType.FalsePositive;
   } else {
-    fileStatus = "fixed";
+    fileStatus = StatusType.Fixed;
   }
 
   const newFile = { ...file, status: fileStatus };
@@ -78,15 +78,19 @@ export const updateRepositoryStatus = (
   files: Files
 ): [Repository, Repositories] => {
   let repositoryStatus = repository.status;
-  const repositoryVulnerable = files.some(f => f.status === "vulnerable");
-  const repositoryFalse = files.every(f => f.status === "false");
+  const repositoryVulnerable = files.some(
+    f => f.status === StatusType.Vulnerable
+  );
+  const repositoryFalse = files.every(
+    f => f.status === StatusType.FalsePositive
+  );
 
   if (repositoryVulnerable) {
-    repositoryStatus = "vulnerable";
+    repositoryStatus = StatusType.Vulnerable;
   } else if (repositoryFalse) {
-    repositoryStatus = "false";
+    repositoryStatus = StatusType.FalsePositive;
   } else {
-    repositoryStatus = "fixed";
+    repositoryStatus = StatusType.Fixed;
   }
 
   const newRepository = { ...repository, status: repositoryStatus };

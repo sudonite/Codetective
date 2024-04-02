@@ -16,6 +16,7 @@ type CodeStore interface {
 	InsertCode(context.Context, *types.Code) (*types.Code, error)
 	UpdateCode(context.Context, Map, types.UpdateCodeParams) error
 	GetCodesByFileID(context.Context, string) ([]*types.Code, error)
+	GetCodeByID(context.Context, string) (*types.Code, error)
 }
 
 type MongoCodeStore struct {
@@ -68,4 +69,20 @@ func (s *MongoCodeStore) GetCodesByFileID(ctx context.Context, id string) ([]*ty
 		return nil, err
 	}
 	return codes, nil
+}
+
+func (s *MongoCodeStore) GetCodeByID(ctx context.Context, id string) (*types.Code, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	resp := s.coll.FindOne(ctx, bson.M{"_id": oid})
+	if err := resp.Err(); err != nil {
+		return nil, err
+	}
+	var code *types.Code
+	if err := resp.Decode(&code); err != nil {
+		return nil, err
+	}
+	return code, nil
 }

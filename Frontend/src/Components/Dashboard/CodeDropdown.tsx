@@ -19,7 +19,7 @@ import {
 import { Button } from "@/Components/UI/Button";
 
 import StatusBadge from "@/Components/Dashboard/StatusBadge";
-import { Code, Status } from "@/Types";
+import { Code, StatusType } from "@/Types";
 
 interface CodeDropdownProps {
   selectedCode: Code | null;
@@ -27,7 +27,7 @@ interface CodeDropdownProps {
   lineNumbers: boolean;
   setWordWrap: (wordWrap: boolean) => void;
   setLineNumbers: (lineNumbers: boolean) => void;
-  onStatusChange: (status: Status) => void;
+  onStatusChange: (status: StatusType) => void;
 }
 
 const CodeDropdown = ({
@@ -74,22 +74,22 @@ const CodeDropdown = ({
           <DropdownMenuPortal>
             <DropdownMenuSubContent>
               <DropdownMenuCheckboxItem
-                onCheckedChange={() => onStatusChange("fixed")}
-                checked={selectedCode?.status === "fixed"}
+                onCheckedChange={() => onStatusChange(StatusType.Fixed)}
+                checked={selectedCode?.status === StatusType.Fixed}
               >
-                <StatusBadge status="fixed" />
+                <StatusBadge status={StatusType.Fixed} />
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
-                onCheckedChange={() => onStatusChange("vulnerable")}
-                checked={selectedCode?.status === "vulnerable"}
+                onCheckedChange={() => onStatusChange(StatusType.Vulnerable)}
+                checked={selectedCode?.status === StatusType.Vulnerable}
               >
-                <StatusBadge status="vulnerable" />
+                <StatusBadge status={StatusType.Vulnerable} />
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
-                onCheckedChange={() => onStatusChange("false")}
-                checked={selectedCode?.status === "false"}
+                onCheckedChange={() => onStatusChange(StatusType.FalsePositive)}
+                checked={selectedCode?.status === StatusType.FalsePositive}
               >
-                <StatusBadge status="false" />
+                <StatusBadge status={StatusType.FalsePositive} />
               </DropdownMenuCheckboxItem>
             </DropdownMenuSubContent>
           </DropdownMenuPortal>

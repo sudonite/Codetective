@@ -1,6 +1,7 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { API } from "@/Consts";
+import { StatusType } from "@/Types";
 
 function createAxiosInstance(jwtToken: string | null) {
   const instance = axios.create({
@@ -63,7 +64,7 @@ export const GetRepositoriesAPI = async () => {
   }
 };
 
-export const GetFilesAPI = async (repositoryId: number) => {
+export const GetFilesAPI = async (repositoryId: string) => {
   try {
     const response = await instance.get(`/files/${repositoryId}`);
     return { data: response?.data, status: response.status };
@@ -72,10 +73,22 @@ export const GetFilesAPI = async (repositoryId: number) => {
   }
 };
 
-export const GetCodesAPI = async (fileId: number) => {
+export const GetCodesAPI = async (fileId: string) => {
   try {
     const response = await instance.get(`/codes/${fileId}`);
     return { data: response?.data, status: response.status };
+  } catch (error: any) {
+    return { status: error?.response?.status };
+  }
+};
+
+export const ChangeCodeStatusAPI = async (
+  codeId: string,
+  status: StatusType
+) => {
+  try {
+    const response = await instance.put(`/code/${codeId}`, { status });
+    return { status: response.status };
   } catch (error: any) {
     return { status: error?.response?.status };
   }

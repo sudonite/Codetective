@@ -3,6 +3,7 @@ package types
 import (
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -42,6 +43,14 @@ type CreateRepositoryParams struct {
 	Date     time.Time          `json:"date"`
 }
 
+type UpdateRepositoryParams struct {
+	Status StatusType `json:"status"`
+}
+
+func (p UpdateRepositoryParams) ToBSON() bson.M {
+	return bson.M{"status": p.Status}
+}
+
 type Repository struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
 	UserID   primitive.ObjectID `bson:"userID" json:"-"`
@@ -61,4 +70,22 @@ func NewRepositoryFromParams(params CreateRepositoryParams) (*Repository, error)
 		Platform: params.Platform,
 		Date:     params.Date,
 	}, nil
+}
+
+func RepositoryIsVulnerable(files []*File) bool {
+	for _, file := range files {
+		if file.Status == Vulnerable {
+			return true
+		}
+	}
+	return false
+}
+
+func RepositoryIsFalsePositive(files []*File) bool {
+	for _, file := range files {
+		if file.Status != FalsePositive {
+			return false
+		}
+	}
+	return true
 }

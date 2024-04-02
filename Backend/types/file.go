@@ -3,6 +3,7 @@ package types
 import (
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -13,6 +14,14 @@ type CreateFileParams struct {
 	Extension    string
 	Status       StatusType
 	Date         time.Time
+}
+
+type UpdateFileParams struct {
+	Status StatusType
+}
+
+func (p UpdateFileParams) ToBSON() bson.M {
+	return bson.M{"status": p.Status}
 }
 
 type File struct {
@@ -34,4 +43,22 @@ func NewFileFromParams(params CreateFileParams) (*File, error) {
 		Status:       params.Status,
 		Date:         params.Date,
 	}, nil
+}
+
+func FileIsVulnerable(codes []*Code) bool {
+	for _, code := range codes {
+		if code.Status == Vulnerable {
+			return true
+		}
+	}
+	return false
+}
+
+func FileIsFalsePositive(codes []*Code) bool {
+	for _, code := range codes {
+		if code.Status != FalsePositive {
+			return false
+		}
+	}
+	return true
 }

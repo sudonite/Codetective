@@ -14,7 +14,7 @@ const repositoryColl = "repository"
 
 type RepositoryStore interface {
 	InsertRepository(context.Context, *types.Repository) (*types.Repository, error)
-	Update(context.Context, Map, Map) error
+	UpdateRepository(context.Context, Map, types.UpdateRepositoryParams) error
 	GetRepositories(context.Context) ([]*types.Repository, error)
 	GetRepositoryByID(context.Context, string) (*types.Repository, error)
 }
@@ -41,9 +41,18 @@ func (s *MongoRepositoryStore) InsertRepository(ctx context.Context, repository 
 	return repository, nil
 }
 
-func (s *MongoRepositoryStore) Update(ctx context.Context, filter Map, update Map) error {
-	_, err := s.coll.UpdateOne(ctx, filter, update)
-	return err
+func (s *MongoRepositoryStore) UpdateRepository(ctx context.Context, filter Map, params types.UpdateRepositoryParams) error {
+	oid, err := primitive.ObjectIDFromHex(filter["_id"].(string))
+	if err != nil {
+		return err
+	}
+	filter["_id"] = oid
+	update := bson.M{"$set": params.ToBSON()}
+	_, err = s.coll.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *MongoRepositoryStore) GetRepositories(ctx context.Context) ([]*types.Repository, error) {

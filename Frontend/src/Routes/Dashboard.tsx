@@ -23,8 +23,12 @@ import {
   updateFileStatus,
   updateRepositoryStatus,
 } from "@/Utils";
-import { changeStatus } from "@/fakeAPI";
-import { GetRepositoriesAPI, GetFilesAPI, GetCodesAPI } from "@/API";
+import {
+  GetRepositoriesAPI,
+  GetFilesAPI,
+  GetCodesAPI,
+  ChangeCodeStatusAPI,
+} from "@/API";
 import { useToast } from "@/Components/UI/useToast";
 
 const Dashboard = () => {
@@ -78,9 +82,9 @@ const Dashboard = () => {
     setSelectedCode(code);
   };
 
-  const handleStatusChange = (status: StatusType) => {
+  const handleStatusChange = async (status: StatusType) => {
     if (!selectedCode) return;
-    const response = changeStatus(selectedCode.id, status);
+    const response = await ChangeCodeStatusAPI(selectedCode.id, status);
     if (response?.status === 200) {
       const [newCode, newCodes] = updateCodeStatus(selectedCode, codes, status);
       setSelectedCode(newCode);
@@ -103,6 +107,11 @@ const Dashboard = () => {
       );
       setSelectedRepository(newRepository);
       setRepositories(newRepositories);
+    } else {
+      toast({
+        title: "Error",
+        description: "An error occurred",
+      });
     }
   };
 

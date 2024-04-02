@@ -1,7 +1,14 @@
 import { useState } from "react";
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { Codes, File, Status, Code, ChatMessages, ChatMessage } from "@/Types";
+import {
+  Codes,
+  File,
+  StatusType,
+  Code,
+  ChatMessages,
+  ChatMessage,
+} from "@/Types";
 import { codeTheme, welcomeMessage } from "@/Consts";
 import { receiveAnswer } from "@/fakeAPI";
 
@@ -17,7 +24,7 @@ interface CodeAreaProps {
   file: File | null;
   selectedCode: Code | null;
   onCodeChange: (code: Code) => void;
-  onStatusChange: (status: Status) => void;
+  onStatusChange: (status: StatusType) => void;
 }
 
 const CodeArea = ({
@@ -74,7 +81,7 @@ const CodeArea = ({
             <h1 className="text-center">
               <div className="ml-3 grow flex flex-row justify-start items-center">
                 <code className="relative rounded bg-muted px-[0.5rem] py-[0.1rem] font-mono text-lg font-semibold">
-                  {file ? `${file?.path}${file?.name}.${file?.extension}` : ""}
+                  {file ? `${file?.path}/${file?.name}.${file?.extension}` : ""}
                 </code>
               </div>
             </h1>

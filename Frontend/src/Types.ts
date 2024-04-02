@@ -17,7 +17,7 @@ export enum GitPlatformType {
 }
 
 export interface Repository {
-  id: number;
+  id: string;
   name: string;
   url: string;
   status: StatusType;
@@ -26,7 +26,7 @@ export interface Repository {
 }
 
 export interface File {
-  id: number;
+  id: string;
   name: string;
   path: string;
   extension: string;
@@ -35,7 +35,7 @@ export interface File {
 }
 
 export interface Code {
-  id: number;
+  id: string;
   lineStart: number;
   code: string;
   status: StatusType;
