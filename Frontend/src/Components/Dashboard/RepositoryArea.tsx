@@ -91,14 +91,7 @@ const RepositoryArea = ({
         </Tabs>
       </div>
       <div className="grow bg-secondary/50">
-        {repositories.length < 1 ? (
-          <div className="flex flex-col h-full justify-center items-center gap-y-4">
-            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-              No repositories found
-            </h3>
-            <Button variant="outline">Add new Repository</Button>
-          </div>
-        ) : (
+        {repositories && repositories.length > 0 ? (
           <ScrollArea className="h-[calc(100vh-8rem)]">
             {repositories
               .filter(
@@ -144,6 +137,12 @@ const RepositoryArea = ({
                 </Card>
               ))}
           </ScrollArea>
+        ) : (
+          <div className="flex flex-col h-full justify-center items-center gap-y-4">
+            <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
+              No repositories found
+            </h3>
+          </div>
         )}
       </div>
       <div className="h-16 max-h-16 p-2 flex flex-row items-center justify-between border-t">

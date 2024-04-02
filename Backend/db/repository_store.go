@@ -15,7 +15,7 @@ const repositoryColl = "repository"
 type RepositoryStore interface {
 	InsertRepository(context.Context, *types.Repository) (*types.Repository, error)
 	UpdateRepository(context.Context, Map, types.UpdateRepositoryParams) error
-	GetRepositories(context.Context) ([]*types.Repository, error)
+	GetRepositories(context.Context, string) ([]*types.Repository, error)
 	GetRepositoryByID(context.Context, string) (*types.Repository, error)
 }
 
@@ -55,8 +55,13 @@ func (s *MongoRepositoryStore) UpdateRepository(ctx context.Context, filter Map,
 	return nil
 }
 
-func (s *MongoRepositoryStore) GetRepositories(ctx context.Context) ([]*types.Repository, error) {
-	resp, err := s.coll.Find(ctx, bson.M{})
+func (s *MongoRepositoryStore) GetRepositories(ctx context.Context, id string) ([]*types.Repository, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	filter := bson.M{"userID": oid}
+	resp, err := s.coll.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}

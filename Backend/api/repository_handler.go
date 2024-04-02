@@ -16,9 +16,16 @@ func NewRepositoryHandler(reporitoryStore db.RepositoryStore) *RepositoryHandler
 }
 
 func (h *RepositoryHandler) HandleGetRepositories(c *fiber.Ctx) error {
-	repositories, err := h.repositoryStore.GetRepositories(c.Context())
+	user, err := getAuthUser(c)
 	if err != nil {
 		return err
+	}
+	repositories, err := h.repositoryStore.GetRepositories(c.Context(), user.ID.Hex())
+	if err != nil {
+		return err
+	}
+	if repositories == nil {
+		return c.JSON([]string{})
 	}
 	return c.JSON(repositories)
 }
