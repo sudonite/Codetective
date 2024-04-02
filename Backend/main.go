@@ -30,17 +30,25 @@ func main() {
 		codeStore       = db.NewMongoCodeStore(client)
 		fileStore       = db.NewMongoFileStore(client)
 		repositoryStore = db.NewMongoRepositoryStore(client)
+		messageStore    = db.NewMongoMessageStore(client)
+		gitKeyStore     = db.NewMongoGitKeyStore(client)
+		apiKeyStore     = db.NewMongoAPIKeyStore(client)
 		store           = &db.Store{
 			User:       userStore,
 			Repository: repositoryStore,
+			Message:    messageStore,
 			File:       fileStore,
 			Code:       codeStore,
+			GitKey:     gitKeyStore,
+			APIKey:     apiKeyStore,
 		}
 		authHandler       = api.NewAuthHandler(userStore)
 		userHandler       = api.NewUserHandler(userStore)
 		codeHandler       = api.NewCodeHandler(store)
 		fileHandler       = api.NewFileHandler(fileStore)
 		repositoryHandler = api.NewRepositoryHandler(repositoryStore)
+		messageHandler    = api.NewMessageHandler(messageStore)
+		keyHandler        = api.NewKeyHandler(store)
 	)
 
 	app := fiber.New(config)
@@ -63,6 +71,16 @@ func main() {
 
 	apiv1.Get("/codes/:fileID", codeHandler.HandleGetCodes)
 	apiv1.Put("/code/:codeID", codeHandler.HandlePutCode)
+
+	apiv1.Get("/key/git/:keyID", keyHandler.HandleGetGitKey)
+	apiv1.Put("/key/git/:keyID", keyHandler.HandlePutGitKey)
+	apiv1.Post("/key/git", keyHandler.HandlePostGitKey)
+
+	apiv1.Get("/key/api/:keyID", keyHandler.HandleGetAPIKey)
+	apiv1.Put("/key/api/:keyID", keyHandler.HandlePutAPIKey)
+	apiv1.Post("/key/api", keyHandler.HandlePostAPIKey)
+
+	apiv1.Get("/messages/:fileID", messageHandler.HandleGetMessages)
 
 	listenAddr := os.Getenv("HTTP_LISTEN_ADDRESS")
 	app.Listen(listenAddr)
