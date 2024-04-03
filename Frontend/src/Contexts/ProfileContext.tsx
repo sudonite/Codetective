@@ -1,8 +1,9 @@
 import { createContext, useState, useContext } from "react";
-import { ApiKeys, GitKeys, User } from "@/Types";
+import { ApiKeys, GitKeys, User, Subscription } from "@/Types";
 
 interface UserProfile {
   user: User;
+  subscription: Subscription;
   gitKeys: GitKeys;
   apiKeys: ApiKeys;
 }

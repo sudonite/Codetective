@@ -2,10 +2,12 @@ package api
 
 import (
 	"errors"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/sudonite/Codetective/db"
 	"github.com/sudonite/Codetective/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -27,6 +29,10 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 		}
 		return err
 	}
+	subscription, err := h.store.Subscription.GetSubscriptionByUserID(c.Context(), user.ID.Hex())
+	if err != nil {
+		return err
+	}
 	gitKeys, err := h.store.GitKey.GetGitKeysByUserID(c.Context(), user.ID.Hex())
 	if err != nil {
 		return err
@@ -36,9 +42,10 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 		return err
 	}
 	result := map[string]interface{}{
-		"user":    user,
-		"gitKeys": gitKeys,
-		"apiKeys": apiKeys,
+		"user":         user,
+		"subscription": subscription,
+		"gitKeys":      gitKeys,
+		"apiKeys":      apiKeys,
 	}
 	return c.JSON(result)
 }
@@ -94,6 +101,21 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 		return err
 	}
 	if err := h.store.GitKey.InsertEmptyGitKeys(c.Context(), insertedUser.ID); err != nil {
+		return err
+	}
+	oid, err := primitive.ObjectIDFromHex(insertedUser.ID.Hex())
+	if err != nil {
+		return err
+	}
+	subscription, err := types.NewSubscriptionFromParams(types.CreateSubscriptionParams{
+		UserID:  oid,
+		Plan:    types.Free,
+		EndDate: time.Date(2050, 1, 1, 0, 0, 0, 0, time.UTC),
+	})
+	if err != nil {
+		return err
+	}
+	if _, err := h.store.Subscription.InsertSubscription(c.Context(), subscription); err != nil {
 		return err
 	}
 	return c.JSON(insertedUser)

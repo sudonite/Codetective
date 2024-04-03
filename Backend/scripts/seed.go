@@ -713,16 +713,19 @@ func main() {
 		log.Fatal(err)
 	}
 	store := &db.Store{
-		User:       db.NewMongoUserStore(client),
-		Repository: db.NewMongoRepositoryStore(client),
-		File:       db.NewMongoFileStore(client),
-		Code:       db.NewMongoCodeStore(client),
-		GitKey:     db.NewMongoGitKeyStore(client),
-		APIKey:     db.NewMongoAPIKeyStore(client),
+		User:         db.NewMongoUserStore(client),
+		Repository:   db.NewMongoRepositoryStore(client),
+		File:         db.NewMongoFileStore(client),
+		Code:         db.NewMongoCodeStore(client),
+		GitKey:       db.NewMongoGitKeyStore(client),
+		APIKey:       db.NewMongoAPIKeyStore(client),
+		Subscription: db.NewMongoSubscriptionStore(client),
 	}
 
 	user := fixtures.AddUser(store, "Teszt", "Elek", username, password, true)
 	fmt.Printf("User created: %s -> %s", user.Email, password)
+
+	fixtures.AddSubscription(store, user.ID, types.Free, time.Date(2050, 1, 1, 0, 0, 0, 0, time.UTC))
 
 	for _, r := range repositoryies {
 		repository := fixtures.AddRepository(store, user.ID, r.Name, r.URL, r.Status, r.Platform, r.Date)

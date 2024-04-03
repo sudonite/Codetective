@@ -120,3 +120,19 @@ func AddAPIKey(store *db.Store, userID primitive.ObjectID, key string, platform 
 	}
 	return insertedKey
 }
+
+func AddSubscription(store *db.Store, userID primitive.ObjectID, plan types.SubscriptionPlanType, endDate time.Time) *types.Subscription {
+	newSubscription, err := types.NewSubscriptionFromParams(types.CreateSubscriptionParams{
+		UserID:  userID,
+		Plan:    plan,
+		EndDate: endDate,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	insertedSubscription, err := store.Subscription.InsertSubscription(context.TODO(), newSubscription)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return insertedSubscription
+}

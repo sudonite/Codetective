@@ -22,6 +22,10 @@ export enum ApiPlatformType {
   Perplexity = 3,
 }
 
+export enum SubscriptionPlanType {
+  Free = 0,
+}
+
 export interface User {
   id: string;
   email: string;
@@ -57,24 +61,30 @@ export interface Code {
 }
 
 export interface ChatMessage {
-  id: number;
+  id: string;
   message: string;
   sender: Sender;
   date: Date;
 }
 
 export interface GitKey {
-  id: number;
+  id: string;
   key: string | null;
   platform: GitPlatformType;
   date: Date;
 }
 
 export interface ApiKey {
-  id: number;
+  id: string;
   key: string | null;
   platform: ApiPlatformType;
   date: Date;
+}
+
+export interface Subscription {
+  id: string;
+  plan: SubscriptionPlanType;
+  endDate: Date;
 }
 
 export type Repositories = Repository[];

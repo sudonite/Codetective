@@ -26,21 +26,23 @@ func main() {
 	}
 
 	var (
-		userStore       = db.NewMongoUserStore(client)
-		codeStore       = db.NewMongoCodeStore(client)
-		fileStore       = db.NewMongoFileStore(client)
-		repositoryStore = db.NewMongoRepositoryStore(client)
-		messageStore    = db.NewMongoMessageStore(client)
-		gitKeyStore     = db.NewMongoGitKeyStore(client)
-		apiKeyStore     = db.NewMongoAPIKeyStore(client)
-		store           = &db.Store{
-			User:       userStore,
-			Repository: repositoryStore,
-			Message:    messageStore,
-			File:       fileStore,
-			Code:       codeStore,
-			GitKey:     gitKeyStore,
-			APIKey:     apiKeyStore,
+		userStore         = db.NewMongoUserStore(client)
+		codeStore         = db.NewMongoCodeStore(client)
+		fileStore         = db.NewMongoFileStore(client)
+		repositoryStore   = db.NewMongoRepositoryStore(client)
+		messageStore      = db.NewMongoMessageStore(client)
+		gitKeyStore       = db.NewMongoGitKeyStore(client)
+		apiKeyStore       = db.NewMongoAPIKeyStore(client)
+		subscriptionStore = db.NewMongoSubscriptionStore(client)
+		store             = &db.Store{
+			User:         userStore,
+			Repository:   repositoryStore,
+			Message:      messageStore,
+			File:         fileStore,
+			Code:         codeStore,
+			GitKey:       gitKeyStore,
+			APIKey:       apiKeyStore,
+			Subscription: subscriptionStore,
 		}
 		authHandler       = api.NewAuthHandler(userStore)
 		userHandler       = api.NewUserHandler(store)

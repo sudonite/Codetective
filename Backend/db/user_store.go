@@ -13,8 +13,6 @@ import (
 
 const userColl = "users"
 
-type Map map[string]any
-
 type Dropper interface {
 	Drop(context.Context) error
 }

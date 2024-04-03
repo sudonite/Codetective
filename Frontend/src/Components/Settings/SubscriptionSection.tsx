@@ -25,7 +25,20 @@ import {
 
 import { Separator } from "@/Components/UI/Separator";
 
+import { useProfile } from "@/Contexts/ProfileContext";
+import { SubscriptionPlanType } from "@/Types";
+
+const getSubscriptionString = (plan: SubscriptionPlanType | undefined) => {
+  switch (plan) {
+    case SubscriptionPlanType.Free:
+      return "Free";
+    default:
+      return "Unknown";
+  }
+};
+
 const SubscriptionSection = () => {
+  const { profile } = useProfile();
   return (
     <section className="flex flex-col space-y-6">
       <div className="space-y-0.5">
@@ -45,7 +58,7 @@ const SubscriptionSection = () => {
                 Subscription type:
               </td>
               <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">
-                Free Plan
+                {getSubscriptionString(profile?.subscription?.plan)} Type
               </td>
             </tr>
             <tr className="m-0 border-t p-0">
@@ -53,7 +66,9 @@ const SubscriptionSection = () => {
                 Expires on:
               </td>
               <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">
-                {generateRandomDate().toDateString()}
+                {profile?.subscription?.endDate
+                  ? new Date(profile?.subscription?.endDate).toDateString()
+                  : "Unknown"}
               </td>
             </tr>
           </tbody>
@@ -168,7 +183,9 @@ const SubscriptionSection = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button className="w-full">Continue</Button>
+              <Button disabled className="w-full">
+                Continue
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
