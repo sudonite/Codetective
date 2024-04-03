@@ -6,7 +6,7 @@ import { Badge } from "@/Components/UI/Badge";
 import { Input } from "@/Components/UI/Input";
 import { Button } from "@/Components/UI/Button";
 
-import { GitKey, GitPlatformToStr, GitPlatformType } from "@/Types";
+import { GitKey, GitPlatformToStr } from "@/Types";
 
 import GitCardHelp from "@/Components/Settings/GitCardHelp";
 import { useToast } from "@/Components/UI/useToast";

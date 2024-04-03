@@ -7,7 +7,7 @@ const navbarItems = [
   { section: "Profile", href: "/settings/profile" },
   { section: "Subscription", href: "/settings/subscription" },
   { section: "Git Settings", href: "/settings/git" },
-  { section: "Third Party Apps", href: "/settings/apps" },
+  { section: "API Settings", href: "/settings/api" },
 ];
 
 const SideNavbar = () => {

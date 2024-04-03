@@ -113,6 +113,21 @@ export const GitPlatformToStr = (platform: GitPlatformType) => {
   }
 };
 
+export const ApiPlatformToStr = (platform: ApiPlatformType) => {
+  switch (platform) {
+    case ApiPlatformType.Colab:
+      return "Colab";
+    case ApiPlatformType.Kaggle:
+      return "Kaggle";
+    case ApiPlatformType.GPT:
+      return "GPT";
+    case ApiPlatformType.Perplexity:
+      return "Perplexity";
+    default:
+      return "Unknown";
+  }
+};
+
 export type Repositories = Repository[];
 export type Files = File[];
 export type Codes = Code[];

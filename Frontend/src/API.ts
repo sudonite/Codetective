@@ -138,3 +138,22 @@ export const DeleteGitKeyAPI = async (keyID: string) => {
     return { status: error?.response?.status };
   }
 };
+
+export const SaveApiKeyAPI = async (keyID: string, key: string) => {
+  try {
+    const response = await instance.put(`/key/api/${keyID}`, { key });
+    return { status: response.status };
+  } catch (error: any) {
+    return { status: error?.response?.status };
+  }
+};
+
+export const DeleteApiKeyAPI = async (keyID: string) => {
+  try {
+    console.log(keyID);
+    const response = await instance.delete(`/key/api/${keyID}`);
+    return { status: response.status };
+  } catch (error: any) {
+    return { status: error?.response?.status };
+  }
+};

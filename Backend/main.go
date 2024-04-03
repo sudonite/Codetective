@@ -82,6 +82,7 @@ func main() {
 	apiv1.Get("/key/api/:keyID", keyHandler.HandleGetAPIKey)
 	apiv1.Put("/key/api/:keyID", keyHandler.HandlePutAPIKey)
 	apiv1.Post("/key/api", keyHandler.HandlePostAPIKey)
+	apiv1.Delete("/key/api/:keyID", keyHandler.HandleDeleteAPIKey)
 
 	apiv1.Get("/messages/:fileID", messageHandler.HandleGetMessages)
 

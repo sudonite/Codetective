@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -154,6 +155,7 @@ type APIKeyStore interface {
 	GetAPIKeyByID(context.Context, string) (*types.APIKey, error)
 	GetAPIKeysByUserID(context.Context, string) ([]*types.APIKey, error)
 	InsertEmptyAPIKeys(context.Context, primitive.ObjectID) error
+	DeleteAPIKey(context.Context, string) error
 }
 
 type MongoAPIKeyStore struct {
@@ -187,6 +189,7 @@ func (s *MongoAPIKeyStore) UpdateAPIKey(ctx context.Context, filter Map, params 
 	update := Map{"$set": params.ToBSON()}
 	_, err = s.coll.UpdateOne(ctx, filter, update)
 	if err != nil {
+		fmt.Println("5")
 		return err
 	}
 	return nil
@@ -220,6 +223,20 @@ func (s *MongoAPIKeyStore) GetAPIKeysByUserID(ctx context.Context, id string) ([
 		return nil, err
 	}
 	return apiKeys, nil
+}
+
+func (s *MongoAPIKeyStore) DeleteAPIKey(ctx context.Context, id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	filter := Map{"_id": oid}
+	update := Map{"$set": types.UpdateAPIKeyParams{Key: "", Date: time.Now()}.ToBSON()}
+	_, err = s.coll.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *MongoAPIKeyStore) InsertEmptyAPIKeys(ctx context.Context, userID primitive.ObjectID) error {

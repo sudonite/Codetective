@@ -65,7 +65,8 @@ type CreateAPIKeyParams struct {
 }
 
 type UpdateAPIKeyParams struct {
-	Key string `json:"key"`
+	Key  string    `json:"key"`
+	Date time.Time `json:"date"`
 }
 
 func (p UpdateAPIKeyParams) ToBSON() bson.M {

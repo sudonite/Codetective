@@ -105,8 +105,10 @@ func (h *KeyHandler) HandlePutAPIKey(c *fiber.Ctx) error {
 		keyID  = c.Params("keyID")
 	)
 	if err := c.BodyParser(&params); err != nil {
+		fmt.Printf("%+v", params)
 		return ErrBadRequest()
 	}
+	params.Date = time.Now()
 	filter := db.Map{"_id": keyID}
 	if err := h.store.APIKey.UpdateAPIKey(c.Context(), filter, params); err != nil {
 		return err
@@ -130,4 +132,14 @@ func (h *KeyHandler) HandlePostAPIKey(c *fiber.Ctx) error {
 		return err
 	}
 	return c.JSON(key)
+}
+
+func (h *KeyHandler) HandleDeleteAPIKey(c *fiber.Ctx) error {
+	var (
+		keyID = c.Params("keyID")
+	)
+	if err := h.store.APIKey.DeleteAPIKey(c.Context(), keyID); err != nil {
+		return err
+	}
+	return c.JSON(map[string]string{"deleted": keyID})
 }
