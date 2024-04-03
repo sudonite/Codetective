@@ -29,12 +29,13 @@ type CreateGitKeyParams struct {
 }
 
 type UpdateGitKeyParams struct {
-	PublicKey  string `json:"publicKey"`
-	PrivateKey string `json:"privateKey"`
+	PublicKey  string    `json:"publicKey"`
+	PrivateKey string    `json:"privateKey"`
+	Date       time.Time `json:"date"`
 }
 
 func (p UpdateGitKeyParams) ToBSON() bson.M {
-	return bson.M{"publicKey": p.PublicKey, "privateKey": p.PrivateKey}
+	return bson.M{"publicKey": p.PublicKey, "privateKey": p.PrivateKey, "date": p.Date}
 }
 
 func NewGitKeyFromParams(params CreateGitKeyParams) (*GitKey, error) {

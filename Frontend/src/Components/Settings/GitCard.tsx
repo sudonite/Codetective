@@ -1,4 +1,4 @@
-import { FaCopy, FaTrash, FaQuestionCircle } from "react-icons/fa";
+import { FaCopy, FaTrash } from "react-icons/fa";
 import { FaArrowsRotate, FaArrowRotateLeft } from "react-icons/fa6";
 import { SiGithub, SiGitlab, SiGitea, SiBitbucket } from "react-icons/si";
 
@@ -6,48 +6,88 @@ import { Badge } from "@/Components/UI/Badge";
 import { Input } from "@/Components/UI/Input";
 import { Button } from "@/Components/UI/Button";
 
-import { GitKey, GitPlatform } from "@/Types";
+import { GitKey, GitPlatformToStr, GitPlatformType } from "@/Types";
 
-const Header = ({ platform }: { platform: GitPlatform }) => {
-  switch (platform) {
-    case "github":
-      return (
-        <div className="flex flex-row items-center">
-          <SiGithub className="mr-2 w-6 h-6" />
-          <div className="text-lg font-semibold">GitHub</div>
-        </div>
-      );
-    case "gitlab":
-      return (
-        <div className="flex flex-row items-center">
-          <SiGitlab className="mr-2 w-6 h-6" />
-          <div className="text-lg font-semibold">GitLab</div>
-        </div>
-      );
-    case "gitea":
-      return (
-        <div className="flex flex-row items-center">
-          <SiGitea className="mr-2 w-6 h-6" />
-          <div className="text-lg font-semibold">Gitea</div>
-        </div>
-      );
-    case "bitbucket":
-      return (
-        <div className="flex flex-row items-center">
-          <SiBitbucket className="mr-2 w-6 h-6" />
-          <div className="text-lg font-semibold">Bitbucket</div>
-        </div>
-      );
-  }
-};
+import GitCardHelp from "@/Components/Settings/GitCardHelp";
+import { useToast } from "@/Components/UI/useToast";
+import { useProfile, UserProfile } from "@/Contexts/ProfileContext";
+import { GenerateGitKeyAPI, DeleteGitKeyAPI } from "@/API";
 
 const GitCard = ({ gitKey }: { gitKey: GitKey }) => {
+  const { toast } = useToast();
+  const { profile, setProfile } = useProfile();
+
+  const handleCopy = (value: string) => {
+    navigator.clipboard.writeText(value).then(() => {
+      toast({
+        title: "Copied",
+        description: "Key copied to clipboard",
+      });
+    });
+  };
+
+  const handleDelete = async (keyID: string) => {
+    let response = await DeleteGitKeyAPI(keyID);
+    if (response.status === 200) {
+      let newProfile = { ...profile };
+      if (newProfile.gitKeys !== undefined) {
+        newProfile.gitKeys = newProfile.gitKeys.map(key => {
+          if (key.id === keyID) {
+            key.key = "";
+          }
+          return key;
+        });
+        setProfile(newProfile as UserProfile);
+      }
+      toast({
+        title: "Success",
+        description: "Key deleted",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "An error occurred while deleting key",
+      });
+    }
+  };
+
+  const handleGenerate = async (keyID: string) => {
+    let response = await GenerateGitKeyAPI(keyID);
+    if (response.status === 200) {
+      let newProfile = { ...profile };
+      if (newProfile.gitKeys !== undefined) {
+        newProfile.gitKeys = newProfile.gitKeys.map(key => {
+          if (key.id === keyID) {
+            key.key = response.data.key;
+            key.date = response.data.date;
+          }
+          return key;
+        });
+        setProfile(newProfile as UserProfile);
+      }
+      toast({
+        title: "Success",
+        description: "Key generated",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "An error occurred while generating key",
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col rounded-lg border p-4 space-y-4">
       <div className="flex flex-row justify-between">
-        <Header platform={gitKey.platform} />
+        <div className="flex flex-row items-center">
+          <SiBitbucket className="mr-2 w-6 h-6" />
+          <div className="text-lg font-semibold">
+            {GitPlatformToStr(gitKey.platform)}
+          </div>
+        </div>
         <Badge variant="outline">
-          {gitKey?.key ? gitKey.date.toDateString() : "Not Connected"}
+          {gitKey?.key ? new Date(gitKey.date).toDateString() : "Not Connected"}
         </Badge>
       </div>
       <div className="flex flex-row space-x-2">
@@ -58,25 +98,28 @@ const GitCard = ({ gitKey }: { gitKey: GitKey }) => {
         />
         {gitKey.key ? (
           <>
-            <Button variant="outline">
+            <Button
+              variant="outline"
+              onClick={() => handleCopy(gitKey?.key ?? "")}
+            >
               <FaCopy className="w-4 h-4 mr-2" />
               Copy
             </Button>
-            <Button variant="outline">
+            <Button
+              variant="outline"
+              onClick={() => handleGenerate(gitKey?.id)}
+            >
               <FaArrowsRotate className="w-4 h-4 mr-2" />
               Regenerate
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={() => handleDelete(gitKey?.id)}>
               <FaTrash className="w-4 h-4 mr-2" />
               Delete
             </Button>
-            <Button variant="outline">
-              <FaQuestionCircle className="w-4 h-4 mr-2" />
-              Help
-            </Button>
+            <GitCardHelp platform={gitKey?.platform} />
           </>
         ) : (
-          <Button variant="outline">
+          <Button variant="outline" onClick={() => handleGenerate(gitKey?.id)}>
             <FaArrowRotateLeft className="mr-2 w-4 h-4" />
             Generate
           </Button>

@@ -1,6 +1,12 @@
 package api
 
 import (
+	"crypto/ed25519"
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/sudonite/Codetective/db"
 	"github.com/sudonite/Codetective/types"
@@ -29,17 +35,39 @@ func (h *KeyHandler) HandleGetGitKey(c *fiber.Ctx) error {
 
 func (h *KeyHandler) HandlePutGitKey(c *fiber.Ctx) error {
 	var (
-		params types.UpdateGitKeyParams
-		keyID  = c.Params("keyID")
+		keyID = c.Params("keyID")
 	)
-	if err := c.BodyParser(&params); err != nil {
-		return ErrBadRequest()
+	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		return err
+	}
+	privateKeyBase64 := fmt.Sprintf(`-----BEGIN OPENSSH PRIVATE KEY-----\n%v\n-----END OPENSSH PRIVATE KEY-----`, base64.StdEncoding.EncodeToString(privateKey))
+	publicKeyBase64 := fmt.Sprintf("ssh-ed25519 %v", base64.StdEncoding.EncodeToString(publicKey))
+
+	params := types.UpdateGitKeyParams{
+		PublicKey:  publicKeyBase64,
+		PrivateKey: privateKeyBase64,
+		Date:       time.Now(),
 	}
 	filter := db.Map{"_id": keyID}
 	if err := h.store.GitKey.UpdateGitKey(c.Context(), filter, params); err != nil {
 		return err
 	}
-	return c.JSON(map[string]string{"updated": keyID})
+	key, err := h.store.GitKey.GetGitKeyByID(c.Context(), keyID)
+	if err != nil {
+		return err
+	}
+	return c.JSON(key)
+}
+
+func (h *KeyHandler) HandleDeleteGitKey(c *fiber.Ctx) error {
+	var (
+		keyID = c.Params("keyID")
+	)
+	if err := h.store.GitKey.DeleteGitKey(c.Context(), keyID); err != nil {
+		return err
+	}
+	return c.JSON(map[string]string{"deleted": keyID})
 }
 
 func (h *KeyHandler) HandlePostGitKey(c *fiber.Ctx) error {

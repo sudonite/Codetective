@@ -658,8 +658,8 @@ var gitKeys = []GitKeySeed{
 		Date:       time.Now(),
 	},
 	{
-		PublicKey:  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+LbxW8x/JMHOcdJb3fpbMzLuL95H965HGmnGpddmVT admin@codetective",
-		PrivateKey: `-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACBPi28VvMfyTBznHSW936WzMy7i/eR/euRxppxqXXZlUwAAAJDGFOzbxhTs\n2wAAAAtzc2gtZWQyNTUxOQAAACBPi28VvMfyTBznHSW936WzMy7i/eR/euRxppxqXXZlUw\nAAAEBZ8ZXPeIDm75uZIasNIt+/K/K6LuCefG87yy7TOZNszk+LbxW8x/JMHOcdJb3fpbMz\nLuL95H965HGmnGpddmVTAAAADXN1ZG9uaXRlQGFyY2g=\n-----END OPENSSH PRIVATE KEY-----`,
+		PublicKey:  "",
+		PrivateKey: "",
 		Platform:   types.Gitea,
 		Date:       time.Now(),
 	},

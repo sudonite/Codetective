@@ -120,3 +120,21 @@ export const ChangeCodeStatusAPI = async (
     return { status: error?.response?.status };
   }
 };
+
+export const GenerateGitKeyAPI = async (keyID: string) => {
+  try {
+    const response = await instance.put(`/key/git/${keyID}`);
+    return { data: response.data, status: response.status };
+  } catch (error: any) {
+    return { status: error?.response?.status };
+  }
+};
+
+export const DeleteGitKeyAPI = async (keyID: string) => {
+  try {
+    const response = await instance.delete(`/key/git/${keyID}`);
+    return { status: response.status };
+  } catch (error: any) {
+    return { status: error?.response?.status };
+  }
+};

@@ -21,6 +21,7 @@ type GitKeyStore interface {
 	GetGitKeyByID(context.Context, string) (*types.GitKey, error)
 	GetGitKeysByUserID(context.Context, string) ([]*types.GitKey, error)
 	InsertEmptyGitKeys(context.Context, primitive.ObjectID) error
+	DeleteGitKey(context.Context, string) error
 }
 
 type MongoGitKeyStore struct {
@@ -87,6 +88,20 @@ func (s *MongoGitKeyStore) GetGitKeysByUserID(ctx context.Context, id string) ([
 		return nil, err
 	}
 	return gitKeys, nil
+}
+
+func (s *MongoGitKeyStore) DeleteGitKey(ctx context.Context, id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	filter := Map{"_id": oid}
+	update := Map{"$set": types.UpdateGitKeyParams{PublicKey: "", PrivateKey: "", Date: time.Now()}.ToBSON()}
+	_, err = s.coll.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *MongoGitKeyStore) InsertEmptyGitKeys(ctx context.Context, userID primitive.ObjectID) error {

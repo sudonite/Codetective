@@ -1,18 +1,10 @@
-import { useState, useEffect } from "react";
-import { GitKey } from "@/Types";
-import { getGitKeys } from "@/fakeAPI";
 import { Separator } from "@/Components/UI/Separator";
 
 import GitCard from "@/Components/Settings/GitCard";
+import { useProfile } from "@/Contexts/ProfileContext";
 
 const GitSection = () => {
-  const [gitKeys, setGitKeys] = useState<GitKey[]>([]);
-  useEffect(() => {
-    const response = getGitKeys();
-    if (response?.status === 200) {
-      setGitKeys(response.data);
-    }
-  }, []);
+  const { profile } = useProfile();
 
   return (
     <section className="flex flex-col space-y-6">
@@ -25,7 +17,7 @@ const GitSection = () => {
         </p>
       </div>
       <Separator className="my-6" />
-      {gitKeys.map(gitKey => (
+      {profile?.gitKeys.map(gitKey => (
         <GitCard gitKey={gitKey} />
       ))}
     </section>

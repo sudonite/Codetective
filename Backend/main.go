@@ -77,6 +77,7 @@ func main() {
 	apiv1.Get("/key/git/:keyID", keyHandler.HandleGetGitKey)
 	apiv1.Put("/key/git/:keyID", keyHandler.HandlePutGitKey)
 	apiv1.Post("/key/git", keyHandler.HandlePostGitKey)
+	apiv1.Delete("/key/git/:keyID", keyHandler.HandleDeleteGitKey)
 
 	apiv1.Get("/key/api/:keyID", keyHandler.HandleGetAPIKey)
 	apiv1.Put("/key/api/:keyID", keyHandler.HandlePutAPIKey)

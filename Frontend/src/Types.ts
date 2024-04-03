@@ -98,6 +98,21 @@ export const subscriptionPlanToStr = (
   }
 };
 
+export const GitPlatformToStr = (platform: GitPlatformType) => {
+  switch (platform) {
+    case GitPlatformType.Github:
+      return "GitHub";
+    case GitPlatformType.Gitlab:
+      return "GitLab";
+    case GitPlatformType.Gitea:
+      return "Gitea";
+    case GitPlatformType.Bitbucket:
+      return "Bitbucket";
+    default:
+      return "Unknown";
+  }
+};
+
 export type Repositories = Repository[];
 export type Files = File[];
 export type Codes = Code[];

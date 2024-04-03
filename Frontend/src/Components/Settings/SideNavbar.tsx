@@ -6,7 +6,7 @@ import { buttonVariants } from "@/Components/UI/Button";
 const navbarItems = [
   { section: "Profile", href: "/settings/profile" },
   { section: "Subscription", href: "/settings/subscription" },
-  { section: "Git Accounts", href: "/settings/git" },
+  { section: "Git Settings", href: "/settings/git" },
   { section: "Third Party Apps", href: "/settings/apps" },
 ];
 
