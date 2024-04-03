@@ -18,21 +18,25 @@ import {
   AlertDialogTrigger,
 } from "@/Components/UI/AlertDialog";
 
-import { useProfile } from "@/Contexts/ProfileContext";
+import { useProfile, UserProfile } from "@/Contexts/ProfileContext";
 
 import { EditProfileAPI, DeleteProfileAPI } from "@/API";
 import { useToast } from "@/Components/UI/useToast";
 
 const ProfileSection = () => {
-  const { profile } = useProfile();
+  const { profile, setProfile } = useProfile();
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const [firstName, setFirstName] = useState(profile?.user?.firstName);
-  const [lastName, setLastName] = useState(profile?.user?.lastName);
-  const [email, setEmail] = useState(profile?.user?.email);
-  const [newPassword, setNewPassword] = useState("");
-  const [passwordAgain, setPasswordAgain] = useState("");
+  const [firstName, setFirstName] = useState<string>(
+    profile?.user?.firstName ?? ""
+  );
+  const [lastName, setLastName] = useState<string>(
+    profile?.user?.lastName ?? ""
+  );
+  const [email, setEmail] = useState<string>(profile?.user?.email ?? "");
+  const [newPassword, setNewPassword] = useState<string>("");
+  const [passwordAgain, setPasswordAgain] = useState<string>("");
 
   const handleDeleteProfile = async () => {
     const response = await DeleteProfileAPI();
@@ -72,6 +76,15 @@ const ProfileSection = () => {
     };
     const response = await EditProfileAPI(data);
     if (response.status === 200) {
+      const newProfile = { ...profile };
+      if (newProfile.user !== undefined) {
+        newProfile.user.email = email;
+        newProfile.user.firstName = firstName;
+        newProfile.user.lastName = lastName;
+        setProfile(newProfile as UserProfile);
+      }
+      setNewPassword("");
+      setPasswordAgain("");
       toast({
         title: "Success",
         description: "Your profile has been updated.",
@@ -143,7 +156,7 @@ const ProfileSection = () => {
             value={passwordAgain}
             onChange={e => setPasswordAgain(e.target.value)}
             id="passwordAgain"
-            type="text"
+            type="password"
             placeholder="Password Again"
           />
         </div>

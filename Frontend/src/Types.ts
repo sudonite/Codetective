@@ -87,6 +87,17 @@ export interface Subscription {
   endDate: Date;
 }
 
+export const subscriptionPlanToStr = (
+  plan: SubscriptionPlanType | undefined
+) => {
+  switch (plan) {
+    case SubscriptionPlanType.Free:
+      return "Free";
+    default:
+      return "Unknown";
+  }
+};
+
 export type Repositories = Repository[];
 export type Files = File[];
 export type Codes = Code[];

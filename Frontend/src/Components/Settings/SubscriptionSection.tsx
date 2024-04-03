@@ -1,6 +1,5 @@
 import { FaApple, FaCreditCard, FaPaypal } from "react-icons/fa";
 
-import { generateRandomDate } from "@/Utils";
 import { Button } from "@/Components/UI/Button";
 import { Input } from "@/Components/UI/Input";
 import { Label } from "@/Components/UI/Label";
@@ -26,16 +25,7 @@ import {
 import { Separator } from "@/Components/UI/Separator";
 
 import { useProfile } from "@/Contexts/ProfileContext";
-import { SubscriptionPlanType } from "@/Types";
-
-const getSubscriptionString = (plan: SubscriptionPlanType | undefined) => {
-  switch (plan) {
-    case SubscriptionPlanType.Free:
-      return "Free";
-    default:
-      return "Unknown";
-  }
-};
+import { subscriptionPlanToStr } from "@/Types";
 
 const SubscriptionSection = () => {
   const { profile } = useProfile();
@@ -58,7 +48,7 @@ const SubscriptionSection = () => {
                 Subscription type:
               </td>
               <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">
-                {getSubscriptionString(profile?.subscription?.plan)} Type
+                {subscriptionPlanToStr(profile?.subscription?.plan)} Type
               </td>
             </tr>
             <tr className="m-0 border-t p-0">
