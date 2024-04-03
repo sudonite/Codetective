@@ -10,52 +10,66 @@ import (
 )
 
 type UserHandler struct {
-	userStore db.UserStore
+	store *db.Store
 }
 
-func NewUserHandler(userStore db.UserStore) *UserHandler {
+func NewUserHandler(store *db.Store) *UserHandler {
 	return &UserHandler{
-		userStore: userStore,
+		store: store,
 	}
 }
 
 func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
-	var (
-		id = c.Params("id")
-	)
-	user, err := h.userStore.GetUserByID(c.Context(), id)
+	user, err := getAuthUser(c)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return c.JSON(map[string]string{"error": "not found"})
 		}
 		return err
 	}
-	return c.JSON(user)
+	gitKeys, err := h.store.GitKey.GetGitKeysByUserID(c.Context(), user.ID.Hex())
+	if err != nil {
+		return err
+	}
+	apiKeys, err := h.store.APIKey.GetAPIKeysByUserID(c.Context(), user.ID.Hex())
+	if err != nil {
+		return err
+	}
+	result := map[string]interface{}{
+		"user":    user,
+		"gitKeys": gitKeys,
+		"apiKeys": apiKeys,
+	}
+	return c.JSON(result)
 }
 
 func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
 	var (
 		params types.UpdateUserParams
-		userID = c.Params("id")
 	)
+	user, err := getAuthUser(c)
+	if err != nil {
+		return err
+	}
 	if err := c.BodyParser(&params); err != nil {
 		return ErrBadRequest()
 	}
-	filter := db.Map{"_id": userID}
-	if err := h.userStore.UpdateUser(c.Context(), filter, params); err != nil {
+	filter := db.Map{"_id": user.ID.Hex()}
+	if err := h.store.User.UpdateUser(c.Context(), filter, params); err != nil {
 		return err
 	}
-	return c.JSON(map[string]string{"updated": userID})
+	return c.JSON(map[string]string{"updated": user.ID.Hex()})
 }
 
 func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
-	var (
-		userID = c.Params("id")
-	)
-	if err := h.userStore.DeleteUser(c.Context(), userID); err != nil {
+	user, err := getAuthUser(c)
+	if err != nil {
 		return err
 	}
-	return c.JSON(map[string]string{"deleted": userID})
+	if err := h.store.User.DeleteUser(c.Context(), user.ID.Hex()); err != nil {
+		return err
+	}
+	return c.JSON(map[string]string{"deleted": user.ID.Hex()})
 }
 
 func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
@@ -72,8 +86,14 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	insertedUser, err := h.userStore.InsertUser(c.Context(), user)
+	insertedUser, err := h.store.User.InsertUser(c.Context(), user)
 	if err != nil {
+		return err
+	}
+	if err := h.store.APIKey.InsertEmptyAPIKeys(c.Context(), insertedUser.ID); err != nil {
+		return err
+	}
+	if err := h.store.GitKey.InsertEmptyGitKeys(c.Context(), insertedUser.ID); err != nil {
 		return err
 	}
 	return c.JSON(insertedUser)

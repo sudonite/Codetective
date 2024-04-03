@@ -85,3 +85,38 @@ func AddCode(store *db.Store, fileID primitive.ObjectID, status types.StatusType
 	}
 	return insertedCode
 }
+
+func AddGitKey(store *db.Store, userID primitive.ObjectID, publicKey, privateKey string, platform types.GitPlatformType, date time.Time) *types.GitKey {
+	newKey, err := types.NewGitKeyFromParams(types.CreateGitKeyParams{
+		UserID:     userID,
+		PublicKey:  publicKey,
+		PrivateKey: privateKey,
+		Platform:   platform,
+		Date:       date,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	insertedKey, err := store.GitKey.InsertGitKey(context.TODO(), newKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return insertedKey
+}
+
+func AddAPIKey(store *db.Store, userID primitive.ObjectID, key string, platform types.APIPlatformType, date time.Time) *types.APIKey {
+	newKey, err := types.NewAPIKeyFromParams(types.CreateAPIKeyParams{
+		UserID:   userID,
+		Key:      key,
+		Platform: platform,
+		Date:     date,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	insertedKey, err := store.APIKey.InsertAPIKey(context.TODO(), newKey)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return insertedKey
+}

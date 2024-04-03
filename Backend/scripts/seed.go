@@ -40,6 +40,19 @@ type CodeSeed struct {
 	Date      time.Time
 }
 
+type GitKeySeed struct {
+	PublicKey  string
+	PrivateKey string
+	Platform   types.GitPlatformType
+	Date       time.Time
+}
+
+type APIKeySeed struct {
+	Key      string
+	Platform types.APIPlatformType
+	Date     time.Time
+}
+
 var repositoryies = []RepositorySeed{
 	{
 		Name:     "QuantumVault",
@@ -631,6 +644,56 @@ var repositoryies = []RepositorySeed{
 	},
 }
 
+var gitKeys = []GitKeySeed{
+	{
+		PublicKey:  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPFJgYE7mTnfW1+jGvnUPIZK1HoeEUH1nFphe+oH+41K admin@codetective",
+		PrivateKey: `-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACDxSYGBO5k531tfoxr51DyGStR6HhFB9ZxaYXvqB/uNSgAAAJD3Wdh691nY\negAAAAtzc2gtZWQyNTUxOQAAACDxSYGBO5k531tfoxr51DyGStR6HhFB9ZxaYXvqB/uNSg\nAAAEAgn7ynyiFL1UlFZJuYAqdN8AmR0aTHqGW089N+woA/+PFJgYE7mTnfW1+jGvnUPIZK\n1HoeEUH1nFphe+oH+41KAAAADXN1ZG9uaXRlQGFyY2g=\n-----END OPENSSH PRIVATE KEY-----`,
+		Platform:   types.Github,
+		Date:       time.Now(),
+	},
+	{
+		PublicKey:  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBalyqUKVS+5v/FICoU+fS1JdRnUE1ia0LCzTwDcclx4 admin@codetective",
+		PrivateKey: `-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACAWpcqlClUvub/xSAqFPn0tSXUZ1BNYmtCws08A3HJceAAAAJBmJB6RZiQe\nkQAAAAtzc2gtZWQyNTUxOQAAACAWpcqlClUvub/xSAqFPn0tSXUZ1BNYmtCws08A3HJceA\nAAAEAhW2CsP/fOE6gN1rZBm+/4E83r7l1IaGyhAcvNcsiqshalyqUKVS+5v/FICoU+fS1J\ndRnUE1ia0LCzTwDcclx4AAAADXN1ZG9uaXRlQGFyY2g=\n-----END OPENSSH PRIVATE KEY-----`,
+		Platform:   types.Gitlab,
+		Date:       time.Now(),
+	},
+	{
+		PublicKey:  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIE+LbxW8x/JMHOcdJb3fpbMzLuL95H965HGmnGpddmVT admin@codetective",
+		PrivateKey: `-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACBPi28VvMfyTBznHSW936WzMy7i/eR/euRxppxqXXZlUwAAAJDGFOzbxhTs\n2wAAAAtzc2gtZWQyNTUxOQAAACBPi28VvMfyTBznHSW936WzMy7i/eR/euRxppxqXXZlUw\nAAAEBZ8ZXPeIDm75uZIasNIt+/K/K6LuCefG87yy7TOZNszk+LbxW8x/JMHOcdJb3fpbMz\nLuL95H965HGmnGpddmVTAAAADXN1ZG9uaXRlQGFyY2g=\n-----END OPENSSH PRIVATE KEY-----`,
+		Platform:   types.Gitea,
+		Date:       time.Now(),
+	},
+	{
+		PublicKey:  "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKt1WYWdPC4NoquC0aZGXzreNxCWkVxl0rNmzXb6VHcr admin@codetective",
+		PrivateKey: `-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACCrdVmFnTwuDaKrgtGmRl863jcQlpFcZdKzZs12+lR3KwAAAJC6Fx43uhce\nNwAAAAtzc2gtZWQyNTUxOQAAACCrdVmFnTwuDaKrgtGmRl863jcQlpFcZdKzZs12+lR3Kw\nAAAEBb6LZv1W9cYOjPjg2rGZ9VfhCE5qY0ahpDf5WwB13elat1WYWdPC4NoquC0aZGXzre\nNxCWkVxl0rNmzXb6VHcrAAAADXN1ZG9uaXRlQGFyY2g=\n-----END OPENSSH PRIVATE KEY-----`,
+		Platform:   types.Bitbucket,
+		Date:       time.Now(),
+	},
+}
+
+var apiKeys = []APIKeySeed{
+	{
+		Key:      "",
+		Platform: types.Colab,
+		Date:     time.Now(),
+	},
+	{
+		Key:      "35b997af-1644-4484-b456-f7dc1e1ebe3c",
+		Platform: types.Kaggle,
+		Date:     time.Now(),
+	},
+	{
+		Key:      "19f20913-8712-4e52-a0f5-e11e0ac678bd",
+		Platform: types.OpenAI,
+		Date:     time.Now(),
+	},
+	{
+		Key:      "5fae1c9b-5ee6-4835-8248-450ac0b7d5e9",
+		Platform: types.Perplexity,
+		Date:     time.Now(),
+	},
+}
+
 func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal(err)
@@ -654,10 +717,12 @@ func main() {
 		Repository: db.NewMongoRepositoryStore(client),
 		File:       db.NewMongoFileStore(client),
 		Code:       db.NewMongoCodeStore(client),
+		GitKey:     db.NewMongoGitKeyStore(client),
+		APIKey:     db.NewMongoAPIKeyStore(client),
 	}
 
 	user := fixtures.AddUser(store, "Teszt", "Elek", username, password, true)
-	fmt.Printf("User created: %s -> %s", username, password)
+	fmt.Printf("User created: %s -> %s", user.Email, password)
 
 	for _, r := range repositoryies {
 		repository := fixtures.AddRepository(store, user.ID, r.Name, r.URL, r.Status, r.Platform, r.Date)
@@ -667,5 +732,13 @@ func main() {
 				fixtures.AddCode(store, file.ID, c.Status, c.LineStart, c.Code, c.Date)
 			}
 		}
+	}
+
+	for _, g := range gitKeys {
+		fixtures.AddGitKey(store, user.ID, g.PublicKey, g.PrivateKey, g.Platform, g.Date)
+	}
+
+	for _, a := range apiKeys {
+		fixtures.AddAPIKey(store, user.ID, a.Key, a.Platform, a.Date)
 	}
 }

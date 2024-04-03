@@ -49,7 +49,11 @@ func (h *KeyHandler) HandlePostGitKey(c *fiber.Ctx) error {
 	if err := c.BodyParser(&params); err != nil {
 		return ErrBadRequest()
 	}
-	key, err := h.store.GitKey.InsertGitKey(c.Context(), params)
+	newKey, err := types.NewGitKeyFromParams(params)
+	if err != nil {
+		return err
+	}
+	key, err := h.store.GitKey.InsertGitKey(c.Context(), newKey)
 	if err != nil {
 		return err
 	}
@@ -89,7 +93,11 @@ func (h *KeyHandler) HandlePostAPIKey(c *fiber.Ctx) error {
 	if err := c.BodyParser(&params); err != nil {
 		return ErrBadRequest()
 	}
-	key, err := h.store.APIKey.InsertAPIKey(c.Context(), params)
+	newKey, err := types.NewAPIKeyFromParams(params)
+	if err != nil {
+		return err
+	}
+	key, err := h.store.APIKey.InsertAPIKey(c.Context(), newKey)
 	if err != nil {
 		return err
 	}

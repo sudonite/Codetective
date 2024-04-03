@@ -10,11 +10,13 @@ import (
 type APIPlatformType int
 
 func (p APIPlatformType) String() string {
-	return [...]string{"OpenAI", "Perplexity"}[p]
+	return [...]string{"Colab", "Kaggle", "OpenAI", "Perplexity"}[p]
 }
 
 const (
-	OpenAI APIPlatformType = iota
+	Colab APIPlatformType = iota
+	Kaggle
+	OpenAI
 	Perplexity
 )
 
@@ -35,21 +37,21 @@ func (p UpdateGitKeyParams) ToBSON() bson.M {
 	return bson.M{"publicKey": p.PublicKey, "privateKey": p.PrivateKey}
 }
 
-func NewGitKeyFromParams(params CreateGitKeyParams) *GitKey {
+func NewGitKeyFromParams(params CreateGitKeyParams) (*GitKey, error) {
 	return &GitKey{
 		UserID:     params.UserID,
 		PublicKey:  params.PublicKey,
 		PrivateKey: params.PrivateKey,
 		Platform:   params.Platform,
 		Date:       params.Date,
-	}
+	}, nil
 }
 
 type GitKey struct {
 	ID         primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	UserID     primitive.ObjectID `bson:"userID" json:"userID"`
-	PublicKey  string             `bson:"publicKey" json:"publicKey"`
-	PrivateKey string             `bson:"privateKey" json:"privateKey"`
+	UserID     primitive.ObjectID `bson:"userID" json:"-"`
+	PublicKey  string             `bson:"publicKey" json:"key"`
+	PrivateKey string             `bson:"privateKey" json:"-"`
 	Platform   GitPlatformType    `bson:"platform" json:"platform"`
 	Date       time.Time          `bson:"date" json:"date"`
 }
@@ -69,13 +71,13 @@ func (p UpdateAPIKeyParams) ToBSON() bson.M {
 	return bson.M{"key": p.Key}
 }
 
-func NewAPIKeyFromParams(params CreateAPIKeyParams) *APIKey {
+func NewAPIKeyFromParams(params CreateAPIKeyParams) (*APIKey, error) {
 	return &APIKey{
 		UserID:   params.UserID,
 		Key:      params.Key,
 		Platform: params.Platform,
 		Date:     params.Date,
-	}
+	}, nil
 }
 
 type APIKey struct {

@@ -54,6 +54,33 @@ export const RegisterAPI = async (data: any) => {
   }
 };
 
+export const EditProfileAPI = async (data: any) => {
+  try {
+    const response = await instance.put("/user", data);
+    return { status: response.status };
+  } catch (error: any) {
+    return { status: error?.response?.status };
+  }
+};
+
+export const DeleteProfileAPI = async () => {
+  try {
+    const response = await instance.delete("/user");
+    return { status: response.status };
+  } catch (error: any) {
+    return { status: error?.response?.status };
+  }
+};
+
+export const GetProfileAPI = async () => {
+  try {
+    const response = await instance.get("/user");
+    return { data: response?.data, status: response.status };
+  } catch (error: any) {
+    return { status: error?.response?.status };
+  }
+};
+
 export const GetRepositoriesAPI = async () => {
   try {
     const response = await instance.get("/repositories");

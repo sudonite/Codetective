@@ -1,4 +1,3 @@
-export type AppPlatform = "colab" | "kaggle" | "gpt" | "perplexity";
 export type Sender = "user" | "bot";
 
 export enum StatusType {
@@ -14,6 +13,21 @@ export enum GitPlatformType {
   Gitlab = 1,
   Gitea = 2,
   Bitbucket = 3,
+}
+
+export enum ApiPlatformType {
+  Colab = 0,
+  Kaggle = 1,
+  GPT = 2,
+  Perplexity = 3,
+}
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  isAdmin: boolean;
 }
 
 export interface Repository {
@@ -56,10 +70,10 @@ export interface GitKey {
   date: Date;
 }
 
-export interface AppKey {
+export interface ApiKey {
   id: number;
   key: string | null;
-  platform: AppPlatform;
+  platform: ApiPlatformType;
   date: Date;
 }
 
@@ -68,4 +82,4 @@ export type Files = File[];
 export type Codes = Code[];
 export type ChatMessages = ChatMessage[];
 export type GitKeys = GitKey[];
-export type AppKeys = AppKey[];
+export type ApiKeys = ApiKey[];

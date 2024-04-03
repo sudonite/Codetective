@@ -6,7 +6,7 @@ import { TbLetterP } from "react-icons/tb";
 import { Badge } from "@/Components/UI/Badge";
 import { Input } from "@/Components/UI/Input";
 import { Button } from "@/Components/UI/Button";
-import { AppKey } from "@/Types";
+import { ApiKey } from "@/Types";
 
 type AppsVariant = "GPT" | "Perplexity" | "Kaggle" | "Colab";
 
@@ -28,7 +28,7 @@ const AppsCard = ({
   appKey,
 }: {
   variant: AppsVariant;
-  appKey: AppKey;
+  appKey: ApiKey;
 }) => {
   return (
     <div className="flex flex-col rounded-lg border p-4 space-y-4">

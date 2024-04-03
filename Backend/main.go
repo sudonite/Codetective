@@ -43,7 +43,7 @@ func main() {
 			APIKey:     apiKeyStore,
 		}
 		authHandler       = api.NewAuthHandler(userStore)
-		userHandler       = api.NewUserHandler(userStore)
+		userHandler       = api.NewUserHandler(store)
 		codeHandler       = api.NewCodeHandler(store)
 		fileHandler       = api.NewFileHandler(fileStore)
 		repositoryHandler = api.NewRepositoryHandler(repositoryStore)
@@ -61,9 +61,9 @@ func main() {
 
 	apiv1 := app.Group("/api/v1", api.JWTAuthentication(userStore))
 
-	apiv1.Get("/user/:id", userHandler.HandleGetUser)
-	apiv1.Put("/user/:id", userHandler.HandlePutUser)
-	apiv1.Delete("/user/:id", userHandler.HandleDeleteUser)
+	apiv1.Get("/user", userHandler.HandleGetUser)
+	apiv1.Put("/user", userHandler.HandlePutUser)
+	apiv1.Delete("/user", userHandler.HandleDeleteUser)
 
 	apiv1.Get("/repositories", repositoryHandler.HandleGetRepositories)
 

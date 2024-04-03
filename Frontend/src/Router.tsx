@@ -1,4 +1,7 @@
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { useEffect } from "react";
+import { RouterProvider, createBrowserRouter, Outlet } from "react-router-dom";
+import { GetProfileAPI } from "@/API";
+import { useProfile } from "./Contexts/ProfileContext";
 
 import Landing from "@/Routes/Landing";
 import Login from "@/Routes/Login";
@@ -10,6 +13,24 @@ import AppsSection from "@/Components/Settings/AppsSection";
 import GitSection from "@/Components/Settings/GitSection";
 import ProfileSection from "@/Components/Settings/ProfileSection";
 import SubscriptionSection from "@/Components/Settings/SubscriptionSection";
+
+const Protector = () => {
+  const { setProfile } = useProfile();
+  useEffect(() => {
+    const jwtToken = localStorage.getItem("jwtToken");
+    if (!jwtToken) {
+      window.location.href = "/";
+    }
+
+    (async () => {
+      const response = await GetProfileAPI();
+      if (response.status === 200) {
+        setProfile(response.data);
+      }
+    })();
+  }, []);
+  return <Outlet />;
+};
 
 const routes = createBrowserRouter([
   {
@@ -30,28 +51,34 @@ const routes = createBrowserRouter([
     ],
   },
   {
-    path: "/dashboard",
-    element: <Dashboard />,
-  },
-  {
-    path: "/settings",
-    element: <Settings />,
+    path: "/",
+    element: <Protector />,
     children: [
       {
-        path: "profile",
-        element: <ProfileSection />,
+        path: "dashboard",
+        element: <Dashboard />,
       },
       {
-        path: "subscription",
-        element: <SubscriptionSection />,
-      },
-      {
-        path: "git",
-        element: <GitSection />,
-      },
-      {
-        path: "apps",
-        element: <AppsSection />,
+        path: "settings",
+        element: <Settings />,
+        children: [
+          {
+            path: "profile",
+            element: <ProfileSection />,
+          },
+          {
+            path: "subscription",
+            element: <SubscriptionSection />,
+          },
+          {
+            path: "git",
+            element: <GitSection />,
+          },
+          {
+            path: "apps",
+            element: <AppsSection />,
+          },
+        ],
       },
     ],
   },

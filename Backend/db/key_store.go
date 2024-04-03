@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/sudonite/Codetective/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,9 +16,11 @@ const (
 )
 
 type GitKeyStore interface {
-	InsertGitKey(context.Context, types.CreateGitKeyParams) (*types.GitKey, error)
+	InsertGitKey(context.Context, *types.GitKey) (*types.GitKey, error)
 	UpdateGitKey(context.Context, Map, types.UpdateGitKeyParams) error
 	GetGitKeyByID(context.Context, string) (*types.GitKey, error)
+	GetGitKeysByUserID(context.Context, string) ([]*types.GitKey, error)
+	InsertEmptyGitKeys(context.Context, primitive.ObjectID) error
 }
 
 type MongoGitKeyStore struct {
@@ -33,8 +36,7 @@ func NewMongoGitKeyStore(client *mongo.Client) *MongoGitKeyStore {
 	}
 }
 
-func (s *MongoGitKeyStore) InsertGitKey(ctx context.Context, params types.CreateGitKeyParams) (*types.GitKey, error) {
-	gitKey := types.NewGitKeyFromParams(params)
+func (s *MongoGitKeyStore) InsertGitKey(ctx context.Context, gitKey *types.GitKey) (*types.GitKey, error) {
 	resp, err := s.coll.InsertOne(ctx, gitKey)
 	if err != nil {
 		return nil, err
@@ -70,10 +72,73 @@ func (s *MongoGitKeyStore) GetGitKeyByID(ctx context.Context, id string) (*types
 	return &gitKey, nil
 }
 
+func (s *MongoGitKeyStore) GetGitKeysByUserID(ctx context.Context, id string) ([]*types.GitKey, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	filter := Map{"userID": oid}
+	resp, err := s.coll.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	var gitKeys []*types.GitKey
+	if err = resp.All(ctx, &gitKeys); err != nil {
+		return nil, err
+	}
+	return gitKeys, nil
+}
+
+func (s *MongoGitKeyStore) InsertEmptyGitKeys(ctx context.Context, userID primitive.ObjectID) error {
+	_, err := s.coll.InsertOne(ctx, types.GitKey{
+		UserID:     userID,
+		PublicKey:  "",
+		PrivateKey: "",
+		Platform:   types.GitPlatformType(types.Github),
+		Date:       time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+	_, err = s.coll.InsertOne(ctx, types.GitKey{
+		UserID:     userID,
+		PublicKey:  "",
+		PrivateKey: "",
+		Platform:   types.GitPlatformType(types.Gitlab),
+		Date:       time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+	_, err = s.coll.InsertOne(ctx, types.GitKey{
+		UserID:     userID,
+		PublicKey:  "",
+		PrivateKey: "",
+		Platform:   types.GitPlatformType(types.Gitea),
+		Date:       time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+	_, err = s.coll.InsertOne(ctx, types.GitKey{
+		UserID:     userID,
+		PublicKey:  "",
+		PrivateKey: "",
+		Platform:   types.GitPlatformType(types.Bitbucket),
+		Date:       time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 type APIKeyStore interface {
-	InsertAPIKey(context.Context, types.CreateAPIKeyParams) (*types.APIKey, error)
+	InsertAPIKey(context.Context, *types.APIKey) (*types.APIKey, error)
 	UpdateAPIKey(context.Context, Map, types.UpdateAPIKeyParams) error
 	GetAPIKeyByID(context.Context, string) (*types.APIKey, error)
+	GetAPIKeysByUserID(context.Context, string) ([]*types.APIKey, error)
+	InsertEmptyAPIKeys(context.Context, primitive.ObjectID) error
 }
 
 type MongoAPIKeyStore struct {
@@ -89,8 +154,7 @@ func NewMongoAPIKeyStore(client *mongo.Client) *MongoAPIKeyStore {
 	}
 }
 
-func (s *MongoAPIKeyStore) InsertAPIKey(ctx context.Context, params types.CreateAPIKeyParams) (*types.APIKey, error) {
-	apiKey := types.NewAPIKeyFromParams(params)
+func (s *MongoAPIKeyStore) InsertAPIKey(ctx context.Context, apiKey *types.APIKey) (*types.APIKey, error) {
 	resp, err := s.coll.InsertOne(ctx, apiKey)
 	if err != nil {
 		return nil, err
@@ -124,4 +188,61 @@ func (s *MongoAPIKeyStore) GetAPIKeyByID(ctx context.Context, id string) (*types
 		return nil, err
 	}
 	return &apiKey, nil
+}
+
+func (s *MongoAPIKeyStore) GetAPIKeysByUserID(ctx context.Context, id string) ([]*types.APIKey, error) {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
+	}
+	filter := Map{"userID": oid}
+	resp, err := s.coll.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	var apiKeys []*types.APIKey
+	if err = resp.All(ctx, &apiKeys); err != nil {
+		return nil, err
+	}
+	return apiKeys, nil
+}
+
+func (s *MongoAPIKeyStore) InsertEmptyAPIKeys(ctx context.Context, userID primitive.ObjectID) error {
+	_, err := s.coll.InsertOne(ctx, types.APIKey{
+		UserID:   userID,
+		Key:      "",
+		Platform: types.APIPlatformType(types.Colab),
+		Date:     time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+	_, err = s.coll.InsertOne(ctx, types.APIKey{
+		UserID:   userID,
+		Key:      "",
+		Platform: types.APIPlatformType(types.Kaggle),
+		Date:     time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+	_, err = s.coll.InsertOne(ctx, types.APIKey{
+		UserID:   userID,
+		Key:      "",
+		Platform: types.APIPlatformType(types.OpenAI),
+		Date:     time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+	_, err = s.coll.InsertOne(ctx, types.APIKey{
+		UserID:   userID,
+		Key:      "",
+		Platform: types.APIPlatformType(types.Perplexity),
+		Date:     time.Now(),
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
