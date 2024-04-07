@@ -85,6 +85,7 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 	if err != nil {
 		c.WriteJSON(err)
 		c.Close()
+		return
 	}
 	session, found := h.HandleFindSession(c, user)
 	if !found {
