@@ -725,6 +725,11 @@ func main() {
 	user := fixtures.AddUser(store, "Teszt", "Elek", username, password, true)
 	fmt.Printf("User created: %s -> %s", user.Email, password)
 
+	fixtures.AddUser(store, "Teszt1", "Elek1", "user1", "user1", false)
+	fixtures.AddUser(store, "Teszt2", "Elek2", "user2", "user2", false)
+	fixtures.AddUser(store, "Teszt3", "Elek3", "user3", "user3", false)
+	fixtures.AddUser(store, "Teszt4", "Elek4", "user4", "user4", false)
+
 	fixtures.AddSubscription(store, user.ID, types.Free, time.Date(2050, 1, 1, 0, 0, 0, 0, time.UTC))
 
 	for _, r := range repositoryies {

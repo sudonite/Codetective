@@ -5,11 +5,13 @@ import (
 	"log"
 	"os"
 
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"github.com/sudonite/Codetective/api"
 	"github.com/sudonite/Codetective/db"
+	"github.com/sudonite/Codetective/types"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -44,6 +46,9 @@ func main() {
 			APIKey:       apiKeyStore,
 			Subscription: subscriptionStore,
 		}
+		sessions          = types.Sessions{}
+		startSessionCh    = make(chan *types.Session)
+		finishSessionCh   = make(chan *types.Session)
 		authHandler       = api.NewAuthHandler(userStore)
 		userHandler       = api.NewUserHandler(store)
 		codeHandler       = api.NewCodeHandler(store)
@@ -51,10 +56,16 @@ func main() {
 		repositoryHandler = api.NewRepositoryHandler(repositoryStore)
 		messageHandler    = api.NewMessageHandler(messageStore)
 		keyHandler        = api.NewKeyHandler(store)
+		scanHandler       = api.NewSessionHandler(store, sessions, startSessionCh, finishSessionCh)
 	)
 
 	app := fiber.New(config)
 	app.Use(cors.New())
+
+	go api.SessionDaemon(sessions, startSessionCh, finishSessionCh)
+
+	app.Use("/ws", scanHandler.HandleUpgradeConnection)
+	app.Get("/ws", websocket.New(scanHandler.HandleSession))
 
 	apiv1Auth := app.Group("/api/v1/auth")
 
