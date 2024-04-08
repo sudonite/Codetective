@@ -6,12 +6,25 @@ import { Badge } from "@/Components/UI/Badge";
 import { Input } from "@/Components/UI/Input";
 import { Button } from "@/Components/UI/Button";
 
-import { GitKey, GitPlatformToStr } from "@/Types";
+import { GitKey, GitPlatformToStr, GitPlatformType } from "@/Types";
 
 import GitCardHelp from "@/Components/Settings/GitCardHelp";
 import { useToast } from "@/Components/UI/useToast";
 import { useProfile, UserProfile } from "@/Contexts/ProfileContext";
 import { GenerateGitKeyAPI, DeleteGitKeyAPI } from "@/API";
+
+const CardIcon = ({ platform }: { platform: GitPlatformType }) => {
+  switch (platform) {
+    case GitPlatformType.Github:
+      return <SiGithub className="mr-2 w-6 h-6" />;
+    case GitPlatformType.Gitlab:
+      return <SiGitlab className="mr-2 w-6 h-6" />;
+    case GitPlatformType.Gitea:
+      return <SiGitea className="mr-2 w-6 h-6" />;
+    case GitPlatformType.Bitbucket:
+      return <SiBitbucket className="mr-2 w-6 h-6" />;
+  }
+};
 
 const GitCard = ({ gitKey }: { gitKey: GitKey }) => {
   const { toast } = useToast();
@@ -81,7 +94,7 @@ const GitCard = ({ gitKey }: { gitKey: GitKey }) => {
     <div className="flex flex-col rounded-lg border p-4 space-y-4">
       <div className="flex flex-row justify-between">
         <div className="flex flex-row items-center">
-          <SiBitbucket className="mr-2 w-6 h-6" />
+          <CardIcon platform={gitKey.platform} />
           <div className="text-lg font-semibold">
             {GitPlatformToStr(gitKey.platform)}
           </div>

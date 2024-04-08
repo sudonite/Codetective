@@ -62,7 +62,7 @@ const CodeArea = ({
 
   const handleChat = () => {
     const newMessage: ChatMessage = {
-      id: chatMessages.length + 1,
+      id: `${chatMessages.length + 1}`,
       message: chatInput,
       sender: "user",
       date: new Date(),

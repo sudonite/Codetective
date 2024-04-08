@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { GiArtificialHive } from "react-icons/gi";
-import { FaKaggle, FaSave, FaTrash, FaQuestionCircle } from "react-icons/fa";
+import { FaKaggle, FaSave, FaTrash } from "react-icons/fa";
 import { SiGooglecolab } from "react-icons/si";
 import { TbLetterP } from "react-icons/tb";
 
