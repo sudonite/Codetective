@@ -56,8 +56,9 @@ func (h *SessionHandler) HandleAuthenticate(c *websocket.Conn) (*types.User, err
 
 func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 	var (
-		msg types.SessionMessage
-		err error
+		msg  types.SessionMessage
+		link string
+		err  error
 	)
 	defer c.Close()
 	user, err := h.HandleAuthenticate(c)
@@ -65,83 +66,63 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 		c.WriteJSON(err)
 		return
 	}
-	session, found := h.store.Session.GetSession(user)
-	if !found {
-		session = h.store.Session.AddSession(user)
-	}
+	session := h.store.Session.GetSession(user)
 
+	go func(c *websocket.Conn, l *string) {
+		var recv map[string]string
+		for {
+			err := c.ReadJSON(&recv)
+			if err != nil {
+				break
+			}
+			if _, ok := recv["link"]; ok {
+				link = recv["link"]
+			}
+
+		}
+	}(c, &link)
+
+loop:
 	for {
-		if session.Status == types.Queue {
-			msg = types.SessionMessage{
-				Status:  types.Queue,
-				Message: fmt.Sprintf("You are currently number %v in line", h.store.Session.GetPosition(session)),
-			}
-			if err = c.WriteJSON(msg); err != nil {
-				break
-			}
-		}
-
-		if session.Status == types.Connecting {
+		switch session.Status {
+		case types.Queue:
+			h.store.Session.ChangeMessage(session, fmt.Sprintf("You are currently number %v in line", h.store.Session.GetPosition(session)))
+		case types.Connecting:
 			h.store.Session.TouchDate(session)
-			msg = types.SessionMessage{
-				Status:  types.Connecting,
-				Message: "",
-			}
-			if err = c.WriteJSON(msg); err != nil {
-				break
-			}
-			if pingModel() {
-				h.store.Session.ChangeStatus(session, types.WaitingForClient)
-			} else {
-				break
-			}
-		}
-
-		if session.Status == types.WaitingForClient {
+		case types.WaitingForClient:
 			h.store.Session.TouchDate(session)
-			msg = types.SessionMessage{
-				Status:  types.WaitingForClient,
-				Message: "",
-			}
-			if err = c.WriteJSON(msg); err != nil {
-				break
-			}
-			if err = c.ReadJSON(&msg); err != nil {
-				break
-			}
-			if ok := cloneRepository(session, msg.Message); ok {
-				h.store.Session.SessionStarter(session)
-			}
 		}
 
-		if session.Status == types.Scanning {
-			msg = types.SessionMessage{
-				Status:  session.Status,
-				Message: session.Message,
-			}
-			if err = c.WriteJSON(msg); err != nil {
-				break
-			}
+		msg = types.SessionMessage{
+			Status:  session.Status,
+			Message: session.Message,
 		}
-
-		if session.Status == types.Finished {
-			msg = types.SessionMessage{
-				Status:  session.Status,
-				Message: "",
-			}
-			c.WriteJSON(msg)
+		if err = c.WriteJSON(msg); err != nil {
 			break
 		}
+
+		switch session.Status {
+		case types.Connecting:
+			h.ConnectModel(session)
+		case types.WaitingForClient:
+			h.PrepareRepository(session, link)
+		case types.Finished:
+			break loop
+		}
+
 		time.Sleep(websocketDelay)
 	}
 }
 
-func cloneRepository(session *types.Session, repoURL string) bool {
-	_ = repoURL
-	session.Directory = "path/to/cloned/repo"
-	return true
+func (h *SessionHandler) ConnectModel(session *types.Session) {
+	h.store.Session.ChangeStatus(session, types.WaitingForClient)
 }
 
-func pingModel() bool {
+func (h *SessionHandler) PrepareRepository(session *types.Session, link string) bool {
+	if link == "" {
+		return false
+	}
+	_ = link
+	h.store.Session.SessionStarter(session)
 	return true
 }

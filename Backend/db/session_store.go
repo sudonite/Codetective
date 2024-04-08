@@ -24,11 +24,12 @@ type SessionStore interface {
 	SessionStarter(session *types.Session)
 	SessionStopper(session *types.Session)
 	HandleQueue()
-	GetSession(user *types.User) (*types.Session, bool)
+	GetSession(user *types.User) *types.Session
 	GetPosition(session *types.Session) int
 	AddSession(user *types.User) *types.Session
 	TouchDate(session *types.Session)
 	ChangeStatus(session *types.Session, status types.SessionStatusType)
+	ChangeMessage(session *types.Session, message string)
 }
 
 type WebsocketSessionStore struct {
@@ -57,8 +58,7 @@ func (s *WebsocketSessionStore) SessionCleaner() {
 	for {
 		time.Sleep(cleanerDelay)
 		for k, v := range s.sessions {
-			if time.Since(v.Modified) > maxSessionIdle && (v.Status == types.WaitingForClient ||
-				v.Status == types.Finished || v.Status == types.Connecting) {
+			if time.Since(v.Modified) > maxSessionIdle && v.Status != types.Queue && v.Status != types.Scanning {
 				s.mu.Lock()
 				delete(s.sessions, k)
 				s.mu.Unlock()
@@ -124,16 +124,17 @@ func (s *WebsocketSessionStore) HandleQueue() {
 		if key != primitive.NilObjectID {
 			s.mu.Lock()
 			s.sessions[key].Status = types.Connecting
+			s.sessions[key].Message = ""
 			s.mu.Unlock()
 		}
 	}
 }
 
-func (s *WebsocketSessionStore) GetSession(user *types.User) (*types.Session, bool) {
+func (s *WebsocketSessionStore) GetSession(user *types.User) *types.Session {
 	if session, ok := s.sessions[user.ID]; ok {
-		return session, true
+		return session
 	}
-	return nil, false
+	return s.AddSession(user)
 }
 
 func (s *WebsocketSessionStore) GetPosition(session *types.Session) int {
@@ -174,5 +175,11 @@ func (s *WebsocketSessionStore) TouchDate(session *types.Session) {
 func (s *WebsocketSessionStore) ChangeStatus(session *types.Session, status types.SessionStatusType) {
 	s.mu.Lock()
 	session.Status = status
+	s.mu.Unlock()
+}
+
+func (s *WebsocketSessionStore) ChangeMessage(session *types.Session, message string) {
+	s.mu.Lock()
+	session.Message = message
 	s.mu.Unlock()
 }
