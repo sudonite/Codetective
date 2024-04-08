@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"sync"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
@@ -28,6 +29,10 @@ func main() {
 	}
 
 	var (
+		sessions          = types.Sessions{}
+		startCh           = make(chan *types.Session)
+		finishCh          = make(chan *types.Session)
+		mu                = &sync.Mutex{}
 		userStore         = db.NewMongoUserStore(client)
 		codeStore         = db.NewMongoCodeStore(client)
 		fileStore         = db.NewMongoFileStore(client)
@@ -36,6 +41,7 @@ func main() {
 		gitKeyStore       = db.NewMongoGitKeyStore(client)
 		apiKeyStore       = db.NewMongoAPIKeyStore(client)
 		subscriptionStore = db.NewMongoSubscriptionStore(client)
+		sessionStore      = db.NewWebsocketSessionStore(sessions, startCh, finishCh, mu)
 		store             = &db.Store{
 			User:         userStore,
 			Repository:   repositoryStore,
@@ -45,10 +51,8 @@ func main() {
 			GitKey:       gitKeyStore,
 			APIKey:       apiKeyStore,
 			Subscription: subscriptionStore,
+			Session:      sessionStore,
 		}
-		sessions          = types.Sessions{}
-		startSessionCh    = make(chan *types.Session)
-		finishSessionCh   = make(chan *types.Session)
 		authHandler       = api.NewAuthHandler(userStore)
 		userHandler       = api.NewUserHandler(store)
 		codeHandler       = api.NewCodeHandler(store)
@@ -56,14 +60,14 @@ func main() {
 		repositoryHandler = api.NewRepositoryHandler(repositoryStore)
 		messageHandler    = api.NewMessageHandler(messageStore)
 		keyHandler        = api.NewKeyHandler(store)
-		sessionHandler    = api.NewSessionHandler(store, sessions, startSessionCh, finishSessionCh)
+		sessionHandler    = api.NewSessionHandler(store)
 	)
 
 	app := fiber.New(config)
 	app.Use(cors.New())
 
-	go api.SessionDaemon(sessions, startSessionCh, finishSessionCh)
-	go api.SessionCleaner(sessions)
+	go sessionStore.SessionDaemon()
+	go sessionStore.SessionCleaner()
 
 	app.Use("/ws", sessionHandler.HandleUpgradeConnection)
 	app.Get("/ws", websocket.New(sessionHandler.HandleSession))

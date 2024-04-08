@@ -13,4 +13,5 @@ type Store struct {
 	GitKey       GitKeyStore
 	APIKey       APIKeyStore
 	Subscription SubscriptionStore
+	Session      SessionStore
 }

@@ -10,27 +10,18 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/sudonite/Codetective/db"
 	"github.com/sudonite/Codetective/types"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 const (
-	maxSessions    = 2
-	maxSessionIdle = time.Minute * 5
-	cleanerDelay   = time.Minute * 5
 	websocketDelay = time.Millisecond * 500
-	fakeDelay      = time.Millisecond * 500
-	fakeIterations = 100
 )
 
 type SessionHandler struct {
-	store    *db.Store
-	sessions types.Sessions
-	sc       chan *types.Session
-	fc       chan *types.Session
+	store *db.Store
 }
 
-func NewSessionHandler(store *db.Store, sessions types.Sessions, sc chan *types.Session, fc chan *types.Session) *SessionHandler {
-	return &SessionHandler{store, sessions, sc, fc}
+func NewSessionHandler(store *db.Store) *SessionHandler {
+	return &SessionHandler{store}
 }
 
 func (h *SessionHandler) HandleUpgradeConnection(c *fiber.Ctx) error {
@@ -38,21 +29,6 @@ func (h *SessionHandler) HandleUpgradeConnection(c *fiber.Ctx) error {
 		return c.Next()
 	}
 	return fiber.ErrUpgradeRequired
-}
-
-func (h *SessionHandler) AddSession(user *types.User) *types.Session {
-	newSession := &types.Session{
-		RepositoryID: primitive.NewObjectID(),
-		Directory:    "",
-		Status:       types.Queue,
-		Message:      "",
-		Modified:     time.Now(),
-	}
-	if len(h.sessions) < maxSessions {
-		newSession.Status = types.Connecting
-	}
-	h.sessions[user.ID] = newSession
-	return newSession
 }
 
 func (h *SessionHandler) HandleAuthenticate(c *websocket.Conn) (*types.User, error) {
@@ -78,13 +54,6 @@ func (h *SessionHandler) HandleAuthenticate(c *websocket.Conn) (*types.User, err
 	return user, nil
 }
 
-func (h *SessionHandler) HandleFindSession(user *types.User) (*types.Session, bool) {
-	if sess, ok := h.sessions[user.ID]; ok {
-		return sess, true
-	}
-	return nil, false
-}
-
 func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 	var (
 		msg types.SessionMessage
@@ -96,17 +65,16 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 		c.WriteJSON(err)
 		return
 	}
-	session, found := h.HandleFindSession(user)
+	session, found := h.store.Session.GetSession(user)
 	if !found {
-		session = h.AddSession(user)
+		session = h.store.Session.AddSession(user)
 	}
 
 	for {
-		// @TODO: Implement mutex for session
 		if session.Status == types.Queue {
 			msg = types.SessionMessage{
 				Status:  types.Queue,
-				Message: fmt.Sprintf("You are currently number %v in line", getQueuePosition(h.sessions, session)),
+				Message: fmt.Sprintf("You are currently number %v in line", h.store.Session.GetPosition(session)),
 			}
 			if err = c.WriteJSON(msg); err != nil {
 				break
@@ -114,7 +82,7 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 		}
 
 		if session.Status == types.Connecting {
-			session.Modified = time.Now()
+			h.store.Session.TouchDate(session)
 			msg = types.SessionMessage{
 				Status:  types.Connecting,
 				Message: "",
@@ -123,14 +91,14 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 				break
 			}
 			if pingModel() {
-				session.Status = types.WaitingForClient
+				h.store.Session.ChangeStatus(session, types.WaitingForClient)
 			} else {
 				break
 			}
 		}
 
 		if session.Status == types.WaitingForClient {
-			session.Modified = time.Now()
+			h.store.Session.TouchDate(session)
 			msg = types.SessionMessage{
 				Status:  types.WaitingForClient,
 				Message: "",
@@ -142,8 +110,7 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 				break
 			}
 			if ok := cloneRepository(session, msg.Message); ok {
-				session.Status = types.Scanning
-				h.sc <- session
+				h.store.Session.SessionStarter(session)
 			}
 		}
 
@@ -177,82 +144,4 @@ func cloneRepository(session *types.Session, repoURL string) bool {
 
 func pingModel() bool {
 	return true
-}
-
-func getQueuePosition(sessions types.Sessions, session *types.Session) int {
-	var (
-		position = 1
-	)
-	for _, v := range sessions {
-		if v.Status == types.Queue && v.Modified.Before(session.Modified) {
-			position++
-		}
-	}
-	return position
-}
-
-func HandleQueue(sessions types.Sessions, sc chan *types.Session) {
-	scanning := 0
-	for _, v := range sessions {
-		if v.Status != types.Queue {
-			scanning++
-		}
-	}
-	for i := 0; i < maxSessions-scanning; i++ {
-		var key primitive.ObjectID
-		for k, v := range sessions {
-			if v.Status == types.Queue {
-				if key == primitive.NilObjectID || v.Modified.Before(sessions[key].Modified) {
-					key = k
-				}
-			}
-		}
-		if key != primitive.NilObjectID {
-			sessions[key].Status = types.Connecting
-		}
-	}
-}
-
-func SessionRunner(session *types.Session, fc chan *types.Session) {
-	for i := 0; i < fakeIterations; i++ {
-		session.Message = fmt.Sprintf("Iteration %d of %d", i+1, fakeIterations)
-		time.Sleep(fakeDelay)
-	}
-	fc <- session
-}
-
-func SessionStopper(sessions types.Sessions, session *types.Session, sc chan *types.Session) {
-	session.Status = types.Finished
-	session.Modified = time.Now()
-	for k, v := range sessions {
-		if v == session {
-			delete(sessions, k)
-			break
-		}
-	}
-	HandleQueue(sessions, sc)
-}
-
-func SessionDaemon(sessions types.Sessions, sc chan *types.Session, fc chan *types.Session) {
-	for {
-		select {
-		case session := <-sc:
-			go SessionRunner(session, fc)
-		case session := <-fc:
-			SessionStopper(sessions, session, sc)
-		}
-	}
-}
-
-func SessionCleaner(sessions types.Sessions) {
-	for {
-		time.Sleep(cleanerDelay)
-		for k, v := range sessions {
-			if time.Since(v.Modified) > maxSessionIdle && (v.Status == types.WaitingForClient ||
-				v.Status == types.Finished || v.Status == types.Connecting) {
-				delete(sessions, k)
-			}
-		}
-		// @TODO: Remove unused folders also here
-	}
 }
