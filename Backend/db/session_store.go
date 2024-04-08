@@ -82,7 +82,7 @@ func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
 	s.mu.Unlock()
 	for i := 0; i < fakeIterations; i++ {
 		s.mu.Lock()
-		session.Message = fmt.Sprintf("Iteration %d of %d", i+1, fakeIterations)
+		session.Message = fmt.Sprintf("Analyzing function %d of %d", i+1, fakeIterations)
 		s.mu.Unlock()
 		time.Sleep(fakeDelay)
 	}
@@ -92,6 +92,7 @@ func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
 func (s *WebsocketSessionStore) SessionFinisher(session *types.Session) {
 	s.mu.Lock()
 	session.Status = types.Finished
+	session.Message = ""
 	session.Modified = time.Now()
 	s.mu.Unlock()
 	for k, v := range s.sessions {
@@ -124,6 +125,7 @@ func (s *WebsocketSessionStore) HandleQueue() {
 		if key != primitive.NilObjectID {
 			s.mu.Lock()
 			s.sessions[key].Status = types.Connecting
+			s.sessions[key].Modified = time.Now()
 			s.sessions[key].Message = ""
 			s.mu.Unlock()
 		}

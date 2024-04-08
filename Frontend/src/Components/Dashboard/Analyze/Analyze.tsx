@@ -1,87 +1,55 @@
+import { useState, useEffect } from "react";
+
 import { helix } from "ldrs";
 import { FaCheckCircle } from "react-icons/fa";
+import { AiOutlineLoading } from "react-icons/ai";
 import { SiGithub, SiGitlab, SiGitea, SiBitbucket } from "react-icons/si";
 import { Input } from "@/Components/UI/Input";
 import { Button } from "@/Components/UI/Button";
-import { delay, cn } from "@/Utils";
+import { cn } from "@/Utils";
 
 helix.register();
 
 interface AnalyzeProps {
   start: boolean;
-  progress: { actual: number; total: number };
-  onProgress: (progress: { actual: number; total: number }) => void;
-  status: "not_started" | "started" | "finished";
-  onStatus: (status: "not_started" | "started" | "finished") => void;
+  scanning: boolean;
+  progress: string;
+  finished: boolean;
+  onClick: (data: { [key: string]: string }) => void;
 }
-
-const Title = ({
-  start,
-  status,
-}: {
-  start: boolean;
-  status: "not_started" | "started" | "finished";
-}) => {
-  switch (status) {
-    case "finished":
-      return "Repository Analyzed";
-    case "started":
-      return "Analyzing Repository";
-    case "not_started":
-      if (start) return "Select Repository";
-      else return "Waiting for Model";
-  }
-};
 
 const Analyze = ({
   start,
+  scanning,
   progress,
-  onProgress,
-  status,
-  onStatus,
+  finished,
+  onClick,
 }: AnalyzeProps) => {
-  const totalReceived = (): boolean => (progress.total ? true : false);
+  const [link, setLink] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleStatus = async () => {
-    const total = 973;
-    onStatus("started");
-    await delay(5000);
-    for (let i = 0; i < total; i++) {
-      await delay(10);
-      onProgress({ actual: i + 1, total: total });
-    }
-    onStatus("finished");
-  };
+  useEffect(() => {
+    if (scanning) setLoading(false);
+  }, [scanning]);
 
   return (
     <div className="h-full w-1/4 flex flex-col">
       <div className="h-10">
         <h4 className="text-center scroll-m-20 text-xl font-semibold tracking-tight">
-          <Title start={start} status={status} />
+          {finished
+            ? "Repository Analyzed"
+            : start
+            ? "Analyzing Repository"
+            : "Waiting for Model"}
         </h4>
       </div>
       <div className="h-6">
-        <p className="text-center text-sm text-muted-foreground">
-          {status === "started" ? (
-            totalReceived() ? (
-              <>
-                {"Analyzing function "}
-                <strong>{progress.actual}</strong>
-                {" of "}
-                <strong>{progress.total}</strong>
-              </>
-            ) : (
-              "This may take a few minutes"
-            )
-          ) : (
-            ""
-          )}
-        </p>
+        <p className="text-center text-sm text-muted-foreground">{progress}</p>
       </div>
       <div className="h-full flex items-center justify-center">
-        {status === "finished" ? (
+        {finished ? (
           <FaCheckCircle className="text-primary h-32 w-32" />
-        ) : status === "started" ? (
+        ) : scanning ? (
           <l-helix size={200} speed={2.5} color="hsl(var(--primary))"></l-helix>
         ) : (
           <div className="h-full w-full mx-4 flex flex-col items-center justify-between">
@@ -111,13 +79,30 @@ const Analyze = ({
                 )}
               />
             </div>
-            <Input disabled={!start} placeholder="Repository Web URL or SSH" />
+            <Input
+              id="link"
+              value={link}
+              onChange={e => setLink(e.target.value)}
+              type="text"
+              disabled={!start || loading}
+              placeholder="Repository or SSH Link"
+            />
             <Button
-              onClick={() => handleStatus()}
-              disabled={!start}
+              onClick={() => {
+                setLoading(true);
+                onClick({ link: link });
+              }}
+              disabled={!start || link == "" || loading}
               className="w-full mb-2"
             >
-              Check Repository
+              {loading ? (
+                <>
+                  <AiOutlineLoading className="mr-2 h-4 w-4 animate-spin" />{" "}
+                  Analyzing
+                </>
+              ) : (
+                "Check Repository"
+              )}
             </Button>
           </div>
         )}

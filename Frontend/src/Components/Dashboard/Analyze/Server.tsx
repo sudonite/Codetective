@@ -1,25 +1,13 @@
-import { useEffect } from "react";
 import { ripples } from "ldrs";
 import { FaCheckCircle } from "react-icons/fa";
-import { delay } from "@/Utils";
 
 ripples.register();
 
 interface ServerProps {
-  start: boolean;
   finished: boolean;
-  onFinished: () => void;
 }
 
-const Server = ({ start, finished, onFinished }: ServerProps) => {
-  useEffect(() => {
-    if (!start) return;
-    (async () => {
-      await delay(3000);
-      onFinished();
-    })();
-  }, [start]);
-
+const Server = ({ finished }: ServerProps) => {
   return (
     <div className="h-full w-1/4 flex flex-col">
       <div className="h-10">

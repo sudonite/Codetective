@@ -3,6 +3,7 @@ import { ChatMessage } from "@/Types";
 export const domain =
   document.domain === "localhost" ? "http://localhost:8000" : document.domain;
 export const API = domain + "/api/v1";
+export const WS = domain.replace("http", "ws") + "/ws";
 
 export const themeSelectors = [
   "light_zinc",
@@ -319,7 +320,7 @@ export const codeTheme = {
 };
 
 export const welcomeMessage: ChatMessage = {
-  id: 0,
+  id: "0",
   message: "Hi, how can I help you today?",
   sender: "bot",
   date: new Date(),

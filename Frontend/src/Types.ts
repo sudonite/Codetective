@@ -26,6 +26,14 @@ export enum SubscriptionPlanType {
   Free = 0,
 }
 
+export enum MessageStatusType {
+  Queue = 0,
+  Connecting = 1,
+  WaitingForClient = 2,
+  Scanning = 3,
+  Finished = 4,
+}
+
 export interface User {
   id: string;
   email: string;
@@ -85,6 +93,11 @@ export interface Subscription {
   id: string;
   plan: SubscriptionPlanType;
   endDate: Date;
+}
+
+export interface Message {
+  status: MessageStatusType;
+  message: string;
 }
 
 export const subscriptionPlanToStr = (

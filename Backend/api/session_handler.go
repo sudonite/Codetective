@@ -32,11 +32,11 @@ func (h *SessionHandler) HandleUpgradeConnection(c *fiber.Ctx) error {
 }
 
 func (h *SessionHandler) HandleAuthenticate(c *websocket.Conn) (*types.User, error) {
-	token := c.Headers("Authorization")
+	token := c.Query("token")
 	if token == "" {
 		return nil, ErrUnAuthorized()
 	}
-	claims, err := validateToken(token[7:])
+	claims, err := validateToken(token)
 	if err != nil {
 		return nil, err
 	}
@@ -87,10 +87,6 @@ loop:
 		switch session.Status {
 		case types.Queue:
 			h.store.Session.ChangeMessage(session, fmt.Sprintf("You are currently number %v in line", h.store.Session.GetPosition(session)))
-		case types.Connecting:
-			h.store.Session.TouchDate(session)
-		case types.WaitingForClient:
-			h.store.Session.TouchDate(session)
 		}
 
 		msg = types.SessionMessage{
@@ -123,6 +119,8 @@ func (h *SessionHandler) PrepareRepository(session *types.Session, link string) 
 		return false
 	}
 	_ = link
+	h.store.Session.TouchDate(session)
 	h.store.Session.SessionStarter(session)
+	h.store.Session.ChangeMessage(session, "This may take a few minutes")
 	return true
 }

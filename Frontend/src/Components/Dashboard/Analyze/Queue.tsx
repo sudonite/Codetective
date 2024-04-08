@@ -1,48 +1,15 @@
-import { useEffect } from "react";
 import { hourglass } from "ldrs";
 import { FaCheckCircle } from "react-icons/fa";
-import { delay } from "@/Utils";
 
 hourglass.register();
 
 interface QueueProps {
   start: boolean;
-  position: number;
-  onPosition: (position: number) => void;
+  position: string;
   finished: boolean;
-  onFinished: () => void;
 }
 
-const Subtitle = ({ position }: { position: number }) => {
-  return (
-    <>
-      You are currently number <strong>{position}</strong> in line
-    </>
-  );
-};
-
-const Queue = ({
-  start,
-  position,
-  onPosition,
-  finished,
-  onFinished,
-}: QueueProps) => {
-  useEffect(() => {
-    if (!start) return;
-    (async () => {
-      onPosition(3);
-      await delay(3000);
-      onPosition(2);
-      await delay(3000);
-      onPosition(1);
-      await delay(3000);
-      onPosition(0);
-      await delay(1000);
-      onFinished();
-    })();
-  }, [start]);
-
+const Queue = ({ start, position, finished }: QueueProps) => {
   return (
     <div className="h-full w-1/4 flex flex-col">
       <div className="h-10">
@@ -56,7 +23,7 @@ const Queue = ({
       </div>
       <div className="h-6">
         <p className="text-center text-sm text-muted-foreground">
-          {start && !finished ? <Subtitle position={position} /> : ""}
+          {start && !finished ? position : ""}
         </p>
       </div>
       <div className="h-full flex items-center justify-center">
