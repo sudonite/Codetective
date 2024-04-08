@@ -56,16 +56,17 @@ func main() {
 		repositoryHandler = api.NewRepositoryHandler(repositoryStore)
 		messageHandler    = api.NewMessageHandler(messageStore)
 		keyHandler        = api.NewKeyHandler(store)
-		scanHandler       = api.NewSessionHandler(store, sessions, startSessionCh, finishSessionCh)
+		sessionHandler    = api.NewSessionHandler(store, sessions, startSessionCh, finishSessionCh)
 	)
 
 	app := fiber.New(config)
 	app.Use(cors.New())
 
 	go api.SessionDaemon(sessions, startSessionCh, finishSessionCh)
+	go api.SessionCleaner(sessions)
 
-	app.Use("/ws", scanHandler.HandleUpgradeConnection)
-	app.Get("/ws", websocket.New(scanHandler.HandleSession))
+	app.Use("/ws", sessionHandler.HandleUpgradeConnection)
+	app.Get("/ws", websocket.New(sessionHandler.HandleSession))
 
 	apiv1Auth := app.Group("/api/v1/auth")
 

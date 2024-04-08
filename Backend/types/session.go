@@ -9,10 +9,9 @@ import (
 type SessionStatusType int
 
 const (
-	Pending SessionStatusType = iota
-	Queue
+	Queue SessionStatusType = iota
 	Connecting
-	Waiting
+	WaitingForClient
 	Scanning
 	Finished
 )
@@ -24,7 +23,7 @@ type Session struct {
 	Directory    string             `json:"directory"`
 	Status       SessionStatusType  `json:"status"`
 	Message      string             `json:"message"`
-	Started      time.Time          `json:"started"`
+	Modified     time.Time          `json:"modified"`
 }
 
 type SessionMessage struct {
