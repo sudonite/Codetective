@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import { helix } from "ldrs";
 import { FaCheckCircle } from "react-icons/fa";
@@ -7,6 +7,8 @@ import { SiGithub, SiGitlab, SiGitea, SiBitbucket } from "react-icons/si";
 import { Input } from "@/Components/UI/Input";
 import { Button } from "@/Components/UI/Button";
 import { cn } from "@/Utils";
+import { useProfile } from "@/Contexts/ProfileContext";
+import { GitKeys, GitPlatformType } from "@/Types";
 
 helix.register();
 
@@ -25,8 +27,32 @@ const Analyze = ({
   finished,
   onClick,
 }: AnalyzeProps) => {
+  const { profile } = useProfile();
+  console.log(profile);
   const [link, setLink] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+
+  const gitConnected = (platform: GitPlatformType): boolean => {
+    const keys = profile?.gitKeys as GitKeys;
+    if (keys.find(key => key.platform === platform)?.key !== "") return true;
+    return false;
+  };
+  const githubConnected = useMemo(
+    () => gitConnected(GitPlatformType.Github),
+    [profile?.gitKeys]
+  );
+  const gitlabConnected = useMemo(
+    () => gitConnected(GitPlatformType.Gitlab),
+    [profile?.gitKeys]
+  );
+  const giteaConnected = useMemo(
+    () => gitConnected(GitPlatformType.Gitea),
+    [profile?.gitKeys]
+  );
+  const bitbucketConnected = useMemo(
+    () => gitConnected(GitPlatformType.Bitbucket),
+    [profile?.gitKeys]
+  );
 
   useEffect(() => {
     if (scanning) setLoading(false);
@@ -57,25 +83,49 @@ const Analyze = ({
               <SiGithub
                 className={cn(
                   "w-14 h-14",
-                  start ? "text-primary" : "text-primary/50"
+                  start && !loading
+                    ? githubConnected
+                      ? "text-primary"
+                      : "text-destructive"
+                    : githubConnected
+                    ? "text-primary/50"
+                    : "text-destructive/50"
                 )}
               />
               <SiGitlab
                 className={cn(
                   "w-14 h-14",
-                  start ? "text-primary" : "text-primary/50"
+                  start && !loading
+                    ? gitlabConnected
+                      ? "text-primary"
+                      : "text-destructive"
+                    : gitlabConnected
+                    ? "text-primary/50"
+                    : "text-destructive/50"
                 )}
               />
               <SiGitea
                 className={cn(
                   "w-14 h-14",
-                  start ? "text-destructive" : "text-destructive/50"
+                  start && !loading
+                    ? giteaConnected
+                      ? "text-primary"
+                      : "text-destructive"
+                    : giteaConnected
+                    ? "text-primary/50"
+                    : "text-destructive/50"
                 )}
               />
               <SiBitbucket
                 className={cn(
                   "w-14 h-14",
-                  start ? "text-primary" : "text-primary/50"
+                  start && !loading
+                    ? bitbucketConnected
+                      ? "text-primary"
+                      : "text-destructive"
+                    : bitbucketConnected
+                    ? "text-primary/50"
+                    : "text-destructive/50"
                 )}
               />
             </div>
