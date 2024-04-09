@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { RxCross2 } from "react-icons/rx";
 import * as ToastPrimitives from "@radix-ui/react-toast";

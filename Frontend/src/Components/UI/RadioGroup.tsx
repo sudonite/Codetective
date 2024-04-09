@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { RxCheck } from "react-icons/rx";
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group";

@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { RxArrowLeft, RxArrowRight } from "react-icons/rx";
 import useEmblaCarousel, {

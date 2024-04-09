@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 
 import { RxDotFilled, RxCheck, RxChevronRight } from "react-icons/rx";

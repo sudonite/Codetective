@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { RxDash } from "react-icons/rx";
 import { OTPInput, SlotProps } from "input-otp";

@@ -1,5 +1,3 @@
-"use client";
-
 import { RxDragHandleDots2 } from "react-icons/rx";
 import * as ResizablePrimitive from "react-resizable-panels";
 

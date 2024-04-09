@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { RxCheck, RxCaretSort } from "react-icons/rx";
 
