@@ -20,10 +20,10 @@
     $ cp .env.example .env
 
     # Generate random jwt secret key
-    $ sed -i 's/^JWT_SECRET=.*$/JWT_SECRET='"$(uuidgen | tr -d '-')"'/' .env
+    $ sed -i "s/JWT_PLACE/$(uuidgen | tr -d '-')/g" .env
 
     # Generate random admin password
-    $ sed -i 's!^ADMIN_PASSWORD=.*$!ADMIN_PASSWORD='"$(openssl rand -base64 20 | tr -d '\n=/')"'!' .env
+    $ sed -i "s/PW_PLACE/$(openssl rand -base64 20 | tr -d '\n=\/')/g" .env
 
 ## Start
 
