@@ -694,11 +694,16 @@ var apiKeys = []APIKeySeed{
 }
 
 func main() {
+	if len(os.Args) != 2 {
+		fmt.Println("Usage: go run scripts/seed.go <admin_passwd>")
+		os.Exit(1)
+	}
+
 	var (
 		ctx           = context.Background()
 		mongoEndpoint = os.Getenv("MONGO_DB_URL")
 		mongoDBName   = os.Getenv("MONGO_DB_NAME")
-		password      = os.Getenv("ADMIN_PASSWORD")
+		password      = os.Args[1]
 	)
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoEndpoint))
@@ -718,8 +723,8 @@ func main() {
 		Subscription: db.NewMongoSubscriptionStore(client),
 	}
 
+	fmt.Println("Seeding database...")
 	user := fixtures.AddUser(store, "Teszt", "Elek", "admin@codetective.com", password, true)
-	fmt.Printf("User created: %s -> %s", user.Email, password)
 
 	// @TODO: Remove test users
 	fixtures.AddUser(store, "Teszt1", "Elek1", "user1@codetective.com", "user1", false)
@@ -746,4 +751,6 @@ func main() {
 	for _, a := range apiKeys {
 		fixtures.AddAPIKey(store, user.ID, a.Key, a.Platform, a.Date)
 	}
+
+	fmt.Printf("\nEmail: %s\nPassword: %s", user.Email, password)
 }

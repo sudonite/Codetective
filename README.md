@@ -22,16 +22,13 @@
     # Generate random jwt secret key
     $ sed -i "s/JWT_PLACE/$(uuidgen | tr -d '-')/g" .env
 
-    # Generate random admin password
-    $ sed -i "s/PW_PLACE/$(openssl rand -base64 20 | tr -d '\n=\/')/g" .env
-
 ## Start
 
     # Start containers
     $ sudo docker compose up -d
 
     # Run database seeding (optional)
-    $ sudo docker exec codetective-backend make seed
+    $ sudo docker exec codetective-backend make seed <new_admin_passwd>
 
 ## Stop
 
