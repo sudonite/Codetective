@@ -1,7 +1,11 @@
 import { ChatMessage } from "@/Types";
 
 export const domain =
-  document.domain === "localhost" ? "http://localhost:8000" : document.domain;
+  document.domain === "localhost"
+    ? "http://localhost:8000"
+    : document.domain === "127.0.0.1"
+    ? "http://127.0.0.1:8000"
+    : document.domain;
 export const API = domain + "/api/v1";
 export const WS = domain.replace("http", "ws") + "/ws";
 

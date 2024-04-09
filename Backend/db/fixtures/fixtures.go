@@ -2,7 +2,6 @@ package fixtures
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"time"
 
@@ -11,9 +10,9 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func AddUser(store *db.Store, fn, ln, uname, passwd string, admin bool) *types.User {
+func AddUser(store *db.Store, fn, ln, email, passwd string, admin bool) *types.User {
 	user, err := types.NewUserFromParams(types.CreateUserParams{
-		Email:     fmt.Sprintf("%s@example.com", uname),
+		Email:     email,
 		FirstName: fn,
 		LastName:  ln,
 		Password:  passwd,

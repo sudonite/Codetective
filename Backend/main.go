@@ -9,7 +9,6 @@ import (
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/joho/godotenv"
 	"github.com/sudonite/Codetective/api"
 	"github.com/sudonite/Codetective/db"
 	"github.com/sudonite/Codetective/types"
@@ -104,10 +103,4 @@ func main() {
 
 	listenAddr := os.Getenv("HTTP_LISTEN_ADDRESS")
 	app.Listen(listenAddr)
-}
-
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
-	}
 }

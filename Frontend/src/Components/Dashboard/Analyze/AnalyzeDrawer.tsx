@@ -34,7 +34,7 @@ const AnalyzeDrawer = () => {
     if (!token) return;
     const ws = new WebSocket(WS + "?token=" + token);
 
-    ws.onopen = () => handleServerConnected();
+    ws.onopen = () => console.log("Connected");
     ws.onclose = () => console.log("Disconnected");
     ws.onerror = error => console.log("Error: ", error);
     ws.onmessage = event => handleMessageReceive(event.data);
@@ -52,7 +52,7 @@ const AnalyzeDrawer = () => {
   const handleModelConnected = () => setModelConnected(true);
   const handleScanStarted = () => setScanStarted(true);
   const handleScanProgress = (progress: string) => setScanProgress(progress);
-  const handleFinished = () => {
+  const handleScanFinished = () => {
     setScanFinished(true);
     setScanProgress("");
   };
@@ -61,23 +61,30 @@ const AnalyzeDrawer = () => {
     const msg: Message = JSON.parse(data);
     switch (msg.status) {
       case MessageStatusType.Queue:
+        handleServerConnected();
         handleQueuePosition(msg.message);
         break;
       case MessageStatusType.Connecting:
+        handleServerConnected();
         handleQueueFinished();
         break;
       case MessageStatusType.WaitingForClient:
+        handleServerConnected();
         handleQueueFinished();
         handleModelConnected();
         break;
       case MessageStatusType.Scanning:
+        handleServerConnected();
         handleQueueFinished();
         handleModelConnected();
         handleScanStarted();
         handleScanProgress(msg.message);
         break;
       case MessageStatusType.Finished:
-        handleFinished();
+        handleServerConnected();
+        handleQueueFinished();
+        handleModelConnected();
+        handleScanFinished();
         break;
     }
   };

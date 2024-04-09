@@ -7,7 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/joho/godotenv"
 	"github.com/sudonite/Codetective/db"
 	"github.com/sudonite/Codetective/db/fixtures"
 	"github.com/sudonite/Codetective/types"
@@ -695,16 +694,13 @@ var apiKeys = []APIKeySeed{
 }
 
 func main() {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal(err)
-	}
 	var (
 		ctx           = context.Background()
 		mongoEndpoint = os.Getenv("MONGO_DB_URL")
 		mongoDBName   = os.Getenv("MONGO_DB_NAME")
-		username      = "admin"
-		password      = "admin"
+		password      = os.Getenv("ADMIN_PASSWORD")
 	)
+
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(mongoEndpoint))
 	if err != nil {
 		log.Fatal(err)
@@ -722,13 +718,14 @@ func main() {
 		Subscription: db.NewMongoSubscriptionStore(client),
 	}
 
-	user := fixtures.AddUser(store, "Teszt", "Elek", username, password, true)
+	user := fixtures.AddUser(store, "Teszt", "Elek", "admin@codetective.com", password, true)
 	fmt.Printf("User created: %s -> %s", user.Email, password)
 
-	fixtures.AddUser(store, "Teszt1", "Elek1", "user1", "user1", false)
-	fixtures.AddUser(store, "Teszt2", "Elek2", "user2", "user2", false)
-	fixtures.AddUser(store, "Teszt3", "Elek3", "user3", "user3", false)
-	fixtures.AddUser(store, "Teszt4", "Elek4", "user4", "user4", false)
+	// @TODO: Remove test users
+	fixtures.AddUser(store, "Teszt1", "Elek1", "user1@codetective.com", "user1", false)
+	fixtures.AddUser(store, "Teszt2", "Elek2", "user2@codetective.com", "user2", false)
+	fixtures.AddUser(store, "Teszt3", "Elek3", "user3@codetective.com", "user3", false)
+	fixtures.AddUser(store, "Teszt4", "Elek4", "user4@codetective.com", "user4", false)
 
 	fixtures.AddSubscription(store, user.ID, types.Free, time.Date(2050, 1, 1, 0, 0, 0, 0, time.UTC))
 

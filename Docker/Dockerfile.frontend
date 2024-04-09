@@ -1,0 +1,12 @@
+FROM oven/bun:1 AS build-stage
+WORKDIR /app
+COPY ./Frontend/package.json ./Frontend/bun.lockb ./
+RUN bun install
+COPY ./Frontend/ ./
+RUN bun run build
+
+FROM nginx:alpine3.18
+copy ./Docker/nginx.conf /etc/nginx/conf.d/default.conf
+copy --from=build-stage /app/dist /usr/share/nginx/html
+EXPOSE 80
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

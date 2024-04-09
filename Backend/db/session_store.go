@@ -12,7 +12,7 @@ import (
 const (
 	maxSessions    = 2
 	maxSessionIdle = time.Minute * 5
-	cleanerDelay   = time.Minute * 5
+	cleanerDelay   = time.Minute * 1
 	fakeDelay      = time.Millisecond * 200
 	fakeIterations = 100
 )

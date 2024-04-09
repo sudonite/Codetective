@@ -1,0 +1,38 @@
+name: codetective
+
+services:
+  database:
+    container_name: "${COMPOSE_PROJECT_NAME}-database"
+    build:
+      dockerfile: ./Docker/Dockerfile.database
+    restart: unless-stopped
+    ports:
+      - 27017:27017
+
+  frontend:
+    container_name: "${COMPOSE_PROJECT_NAME}-frontend"
+    build:
+      dockerfile: ./Docker/Dockerfile.frontend
+    restart: unless-stopped
+    ports:
+      - 80:80
+
+  backend:
+    container_name: "${COMPOSE_PROJECT_NAME}-backend"
+    build:
+      context: Backend
+      dockerfile: ../Docker/Dockerfile.backend
+      args:
+        HTTP_LISTEN_ADDRESS: $HTTP_LISTEN_ADDRESS
+        MONGO_DB_NAME: $MONGO_DB_NAME
+        MONGO_DB_URL: $MONGO_DB_URL
+        JWT_SECRET: $JWT_SECRET
+        ADMIN_PASSWORD: $ADMIN_PASSWORD
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+    depends_on:
+      - database
+    env_file:
+      - path: .env
+        required: true
