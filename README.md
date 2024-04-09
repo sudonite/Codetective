@@ -30,6 +30,8 @@
     # Run database seeding (optional)
     $ sudo docker exec codetective-backend make seed <new_admin_passwd>
 
+    # Visit http://127.0.0.1
+
 ## Stop
 
     # Stop containers
