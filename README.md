@@ -10,32 +10,38 @@
 
 ## Setup
 
-    # Clone repository
-    $ git clone https://github.com/sudonite/Codetective
+```bash
+# Clone repository
+$ git clone https://github.com/sudonite/Codetective
 
-    # Change dir
-    $ cd Codetective
+# Change dir
+$ cd Codetective
 
-    # Copy example env
-    $ cp .env.example .env
+# Copy example env
+$ cp .env.example .env
 
-    # Generate random jwt secret key
-    $ sed -i "s/JWT_PLACE/$(uuidgen | tr -d '-')/g" .env
+# Generate random jwt secret key
+$ sed -i "s/JWT_PLACE/$(uuidgen | tr -d '-')/g" .env
+```
 
 ## Start
 
-    # Start containers
-    $ sudo docker compose up -d
+```bash
+# Start containers
+$ sudo docker compose up -d
 
-    # Run database seeding (optional)
-    $ sudo docker exec codetective-backend make seed <new_admin_passwd>
+# Run database seeding (optional)
+$ sudo docker exec codetective-backend make seed <new_admin_passwd>
 
-    # Visit http://127.0.0.1
+# Visit http://127.0.0.1
+```
 
 ## Stop
 
-    # Stop containers
-    $ sudo docker compose down
+```bash
+# Stop containers
+$ sudo docker compose down
 
-    # Remove images
-    $ sudo docker rmi -f $(sudo docker images -q -f "reference=codetective-*")
+# Remove images
+$ sudo docker rmi -f $(sudo docker images -q -f "reference=codetective-*")
+```
