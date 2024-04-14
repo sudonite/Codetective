@@ -1,35 +1,54 @@
 package db
 
 import (
+	"context"
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
+	"slices"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/go-git/go-git/v5"
+	"github.com/google/uuid"
+	sitter "github.com/smacker/go-tree-sitter"
+	"github.com/smacker/go-tree-sitter/cpp"
 	"github.com/sudonite/Codetective/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const (
+var (
+	fakeDelay      = time.Millisecond * 3
 	maxSessions    = 2
 	maxSessionIdle = time.Minute * 5
 	cleanerDelay   = time.Minute * 1
-	fakeDelay      = time.Millisecond * 200
-	fakeIterations = 100
+	clonePath      = "sessions"
+	extensions     = []string{".h", ".c", ".cc", ".cpp"}
 )
 
 type SessionStore interface {
-	SessionDaemon()
-	SessionCleaner()
-	SessionRunner(session *types.Session)
-	SessionStarter(session *types.Session)
-	SessionStopper(session *types.Session)
-	HandleQueue()
-	GetSession(user *types.User) *types.Session
-	GetPosition(session *types.Session) int
-	AddSession(user *types.User) *types.Session
-	TouchDate(session *types.Session)
-	ChangeStatus(session *types.Session, status types.SessionStatusType)
-	ChangeMessage(session *types.Session, message string)
+	SessionDaemon()                                                      //
+	SessionCleaner()                                                     // @TODO
+	SessionRunner(session *types.Session)                                // @TODO
+	SessionFinisher(session *types.Session)                              //
+	ProcessStarter(session *types.Session)                               //
+	ProcessStopper(session *types.Session)                               //
+	HandleQueue()                                                        //
+	GetSession(user *types.User) *types.Session                          //
+	GetPosition(session *types.Session) int                              //
+	AddSession(user *types.User) *types.Session                          //
+	AddFile(session *types.Session, file *types.FileFuncType)            //
+	DeleteSession(session *types.Session)                                //
+	TouchDate(session *types.Session)                                    //
+	ChangeStatus(session *types.Session, status types.SessionStatusType) //
+	ChangeMessage(session *types.Session, message string)                //
+	ChangeDirectory(session *types.Session, dir string)                  //
+	CloneRepository(session *types.Session, link string) error           // @TODO
+	GetFunctionsFromRepository(session *types.Session) error             //
+	GetCodeFromFile(file []byte, pos *types.FuncPostType) string         // @TODO
+	CountFunctions(session *types.Session) int                           //
 }
 
 type WebsocketSessionStore struct {
@@ -57,53 +76,59 @@ func (s *WebsocketSessionStore) SessionDaemon() {
 func (s *WebsocketSessionStore) SessionCleaner() {
 	for {
 		time.Sleep(cleanerDelay)
-		for k, v := range s.sessions {
+		for _, v := range s.sessions {
 			if time.Since(v.Modified) > maxSessionIdle && v.Status != types.Queue && v.Status != types.Scanning {
-				s.mu.Lock()
-				delete(s.sessions, k)
-				s.mu.Unlock()
+				s.DeleteSession(v)
 			}
 		}
 		// @TODO: Remove unused folders also here
+		// And check other places where the session is deleted at the correct way
 	}
-}
-
-func (s *WebsocketSessionStore) SessionStarter(session *types.Session) {
-	s.sc <- session
-}
-
-func (s *WebsocketSessionStore) SessionStopper(session *types.Session) {
-	s.fc <- session
 }
 
 func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
-	s.mu.Lock()
-	session.Status = types.Scanning
-	s.mu.Unlock()
-	for i := 0; i < fakeIterations; i++ {
-		s.mu.Lock()
-		session.Message = fmt.Sprintf("Analyzing function %d of %d", i+1, fakeIterations)
-		s.mu.Unlock()
-		time.Sleep(fakeDelay)
+	// @TODO: Create Repository instance and save it to the database
+	s.ChangeStatus(session, types.Scanning)
+	availableFunctions := s.CountFunctions(session)
+	actual := 1
+
+	for _, file := range session.Files {
+		for _, function := range file.FuncPos {
+			content, err := os.ReadFile(session.Directory + file.Path)
+			if err != nil {
+				log.Println(err)
+			}
+			s.ChangeMessage(session, fmt.Sprintf("Analyzing function %d of %d", actual, availableFunctions))
+			code := s.GetCodeFromFile(content, &function)
+			_ = code
+			// @TODO: Send code to the model here in a new function
+			// And also create IF a code is exists the File (if not exists) and the Code
+			actual++
+			time.Sleep(fakeDelay)
+		}
 	}
-	s.SessionStopper(session)
+
+	s.ProcessStopper(session)
 }
 
 func (s *WebsocketSessionStore) SessionFinisher(session *types.Session) {
-	s.mu.Lock()
-	session.Status = types.Finished
-	session.Message = ""
-	session.Modified = time.Now()
-	s.mu.Unlock()
-	for k, v := range s.sessions {
-		if v == session {
-			s.mu.Lock()
-			delete(s.sessions, k)
-			s.mu.Unlock()
-			break
-		}
-	}
+	s.ChangeStatus(session, types.Finished)
+	s.ChangeMessage(session, "")
+	s.TouchDate(session)
+	s.DeleteSession(session)
 	s.HandleQueue()
+}
+
+func (s *WebsocketSessionStore) ProcessStarter(session *types.Session) {
+	s.mu.Lock()
+	s.sc <- session
+	s.mu.Unlock()
+}
+
+func (s *WebsocketSessionStore) ProcessStopper(session *types.Session) {
+	s.mu.Lock()
+	s.fc <- session
+	s.mu.Unlock()
 }
 
 func (s *WebsocketSessionStore) HandleQueue() {
@@ -116,18 +141,15 @@ func (s *WebsocketSessionStore) HandleQueue() {
 	for i := 0; i < maxSessions-scanning; i++ {
 		var key primitive.ObjectID
 		for k, v := range s.sessions {
-			if v.Status == types.Queue {
-				if key == primitive.NilObjectID || v.Modified.Before(s.sessions[key].Modified) {
-					key = k
-				}
+			if v.Status == types.Queue && (key == primitive.NilObjectID || v.Modified.Before(s.sessions[key].Modified)) {
+				key = k
 			}
 		}
 		if key != primitive.NilObjectID {
-			s.mu.Lock()
-			s.sessions[key].Status = types.Connecting
-			s.sessions[key].Modified = time.Now()
-			s.sessions[key].Message = ""
-			s.mu.Unlock()
+			session := s.sessions[key]
+			s.ChangeStatus(session, types.Connecting)
+			s.ChangeMessage(session, "")
+			s.TouchDate(session)
 		}
 	}
 }
@@ -168,6 +190,24 @@ func (s *WebsocketSessionStore) AddSession(user *types.User) *types.Session {
 	return newSession
 }
 
+func (s *WebsocketSessionStore) AddFile(session *types.Session, file *types.FileFuncType) {
+	s.mu.Lock()
+	session.Files = append(session.Files, *file)
+	s.mu.Unlock()
+}
+
+func (s *WebsocketSessionStore) DeleteSession(session *types.Session) {
+	for k, v := range s.sessions {
+		if v == session {
+			s.mu.Lock()
+			delete(s.sessions, k)
+			s.mu.Unlock()
+			break
+		}
+
+	}
+}
+
 func (s *WebsocketSessionStore) TouchDate(session *types.Session) {
 	s.mu.Lock()
 	session.Modified = time.Now()
@@ -184,4 +224,100 @@ func (s *WebsocketSessionStore) ChangeMessage(session *types.Session, message st
 	s.mu.Lock()
 	session.Message = message
 	s.mu.Unlock()
+}
+
+func (s *WebsocketSessionStore) ChangeDirectory(session *types.Session, dir string) {
+	s.mu.Lock()
+	session.Directory = dir
+	s.mu.Unlock()
+}
+
+func (s *WebsocketSessionStore) CloneRepository(session *types.Session, link string) error {
+	// @TODO: Add private repository feature
+	path := clonePath + "/" + strings.ReplaceAll(uuid.New().String(), "-", "")
+	_, err := git.PlainClone(path, false, &git.CloneOptions{
+		URL:      link,
+		Progress: nil,
+	})
+	if err != nil {
+		return err
+	}
+
+	s.ChangeDirectory(session, path)
+
+	return nil
+}
+
+func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Session) error {
+	files := []string{}
+	err := filepath.Walk(session.Directory, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() {
+			return nil
+		}
+		ext := filepath.Ext(path)
+		if slices.Contains(extensions, ext) {
+			files = append(files, strings.TrimPrefix(path, session.Directory))
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	parser := sitter.NewParser()
+	parser.SetLanguage(cpp.GetLanguage())
+
+	var funcBytes []types.FuncPostType
+	var getPos func(*sitter.Node, *[]types.FuncPostType)
+
+	getPos = func(node *sitter.Node, pos *[]types.FuncPostType) {
+		if node.Type() == "function_definition" {
+			*pos = append(*pos, types.FuncPostType{
+				StartByte: uint32(node.StartByte()),
+				EndByte:   uint32(node.EndByte()),
+			})
+		}
+		for i := 0; i < int(node.ChildCount()); i++ {
+			getPos(node.Child(i), pos)
+		}
+	}
+
+	for _, file := range files {
+		funcBytes = []types.FuncPostType{}
+		content, err := os.ReadFile(session.Directory + file)
+		if err != nil {
+			return err
+		}
+
+		tree, err := parser.ParseCtx(context.Background(), nil, content)
+		if err != nil {
+			return err
+		}
+
+		getPos(tree.RootNode(), &funcBytes)
+		s.AddFile(session, &types.FileFuncType{
+			Path:    strings.TrimPrefix(file, session.Directory),
+			FuncPos: funcBytes,
+		})
+	}
+	return nil
+}
+
+func (s *WebsocketSessionStore) GetCodeFromFile(file []byte, pos *types.FuncPostType) string {
+	// @TODO: Refactor this function to return the code and the line number
+	code := string(file[pos.StartByte:pos.EndByte])
+	code = strings.ReplaceAll(code, "\n", "\\n")
+	code = strings.ReplaceAll(code, "\t", "\\t")
+	return code
+}
+
+func (s *WebsocketSessionStore) CountFunctions(session *types.Session) int {
+	sum := 0
+	for _, v := range session.Files {
+		sum += len(v.FuncPos)
+	}
+	return sum
 }

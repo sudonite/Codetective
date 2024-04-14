@@ -13,6 +13,8 @@ import { Message, MessageStatusType } from "@/Types";
 const AnalyzeDrawer = () => {
   const connection = useRef<WebSocket | null>(null);
 
+  const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
+
   const [serverConnected, setServerConnected] = useState<boolean>(false);
 
   const [queuePosition, setQueuePosition] = useState<string>("");
@@ -23,13 +25,10 @@ const AnalyzeDrawer = () => {
   const [scanStarted, setScanStarted] = useState<boolean>(false);
   const [scanProgress, setScanProgress] = useState<string>("");
   const [scanFinished, setScanFinished] = useState<boolean>(false);
-
-  const handleDrawer = (open: boolean) => {
-    if (open) handleDrawerOpen();
-    else handleDrawerClose();
-  };
+  const [scanError, setScanError] = useState<boolean>(false);
 
   const handleDrawerOpen = () => {
+    setDrawerOpen(true);
     const token = localStorage.getItem("jwtToken");
     if (!token) return;
     const ws = new WebSocket(WS + "?token=" + token);
@@ -42,6 +41,7 @@ const AnalyzeDrawer = () => {
     connection.current = ws;
   };
   const handleDrawerClose = () => {
+    setDrawerOpen(false);
     handleReset();
     connection.current?.close();
   };
@@ -56,6 +56,7 @@ const AnalyzeDrawer = () => {
     setScanFinished(true);
     setScanProgress("");
   };
+  const handleError = () => setScanError(true);
 
   const handleMessageReceive = (data: string) => {
     const msg: Message = JSON.parse(data);
@@ -72,6 +73,7 @@ const AnalyzeDrawer = () => {
         handleServerConnected();
         handleQueueFinished();
         handleModelConnected();
+        handleScanProgress(msg.message);
         break;
       case MessageStatusType.Scanning:
         handleServerConnected();
@@ -86,11 +88,34 @@ const AnalyzeDrawer = () => {
         handleModelConnected();
         handleScanFinished();
         break;
+      case MessageStatusType.Error:
+        handleServerConnected();
+        handleQueueFinished();
+        handleModelConnected();
+        handleScanProgress(msg.message);
+        handleError();
+        break;
     }
   };
 
   const handleMessageSend = (data: { [key: string]: string }) => {
     connection.current?.send(JSON.stringify(data));
+    handleScanStarted();
+  };
+
+  const handleStartAction = (link: string) => {
+    handleMessageSend({ action: "start", link });
+  };
+  const handleRetryAction = () => {
+    handleMessageSend({ action: "retry" });
+    setScanProgress("");
+    setScanStarted(false);
+    setScanFinished(false);
+    setScanError(false);
+  };
+  const handleCancelAction = () => {
+    handleMessageSend({ action: "cancel" });
+    handleDrawerClose();
   };
 
   const handleReset = () => {
@@ -101,12 +126,16 @@ const AnalyzeDrawer = () => {
     setScanStarted(false);
     setScanProgress("");
     setScanFinished(false);
+    setScanError(false);
   };
 
   return (
-    <Drawer onOpenChange={handleDrawer}>
+    <Drawer
+      open={drawerOpen}
+      onOpenChange={open => !open && handleDrawerClose()}
+    >
       <DrawerTrigger asChild>
-        <Button variant="secondary">
+        <Button variant="secondary" onClick={handleDrawerOpen}>
           <FaShieldHalved className="mr-2 w-4 h-4" />
           Scan Code
         </Button>
@@ -125,7 +154,10 @@ const AnalyzeDrawer = () => {
             scanning={scanStarted}
             progress={scanProgress}
             finished={scanFinished}
-            onClick={handleMessageSend}
+            error={scanError}
+            onStart={handleStartAction}
+            onRetry={handleRetryAction}
+            onCancel={handleCancelAction}
           />
         </div>
       </DrawerContent>

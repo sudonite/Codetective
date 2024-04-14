@@ -32,6 +32,7 @@ export enum MessageStatusType {
   WaitingForClient = 2,
   Scanning = 3,
   Finished = 4,
+  Error = 5,
 }
 
 export interface User {

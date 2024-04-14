@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 
 import { helix } from "ldrs";
 import { FaCheckCircle } from "react-icons/fa";
+import { FaCircleXmark } from "react-icons/fa6";
 import { AiOutlineLoading } from "react-icons/ai";
 import { SiGithub, SiGitlab, SiGitea, SiBitbucket } from "react-icons/si";
 import { Input } from "@/Components/UI/Input";
@@ -9,6 +10,7 @@ import { Button } from "@/Components/UI/Button";
 import { cn } from "@/Utils";
 import { useProfile } from "@/Contexts/ProfileContext";
 import { GitKeys, GitPlatformType } from "@/Types";
+import { capitalizeFirstLetter } from "@/Utils";
 
 helix.register();
 
@@ -17,7 +19,10 @@ interface AnalyzeProps {
   scanning: boolean;
   progress: string;
   finished: boolean;
-  onClick: (data: { [key: string]: string }) => void;
+  error: boolean;
+  onStart: (link: string) => void;
+  onRetry: () => void;
+  onCancel: () => void;
 }
 
 const Analyze = ({
@@ -25,10 +30,12 @@ const Analyze = ({
   scanning,
   progress,
   finished,
-  onClick,
+  error,
+  onStart,
+  onRetry,
+  onCancel,
 }: AnalyzeProps) => {
   const { profile } = useProfile();
-  console.log(profile);
   const [link, setLink] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -62,22 +69,46 @@ const Analyze = ({
     <div className="h-full w-1/4 flex flex-col">
       <div className="h-10">
         <h4 className="text-center scroll-m-20 text-xl font-semibold tracking-tight">
-          {finished
-            ? "Repository Analyzed"
-            : start
-            ? "Analyzing Repository"
-            : "Waiting for Model"}
+          {finished && "Repository Analyzed"}
+          {error && "Failed to Analyze Repository"}
+          {scanning && !finished && !error && "Analyzing Repository"}
+          {!scanning && !finished && !error && "Waiting for Model"}
         </h4>
       </div>
       <div className="h-6">
-        <p className="text-center text-sm text-muted-foreground">{progress}</p>
+        <p className="text-center text-sm text-muted-foreground">
+          {capitalizeFirstLetter(progress)}
+        </p>
       </div>
       <div className="h-full flex items-center justify-center">
-        {finished ? (
-          <FaCheckCircle className="text-primary h-32 w-32" />
-        ) : scanning ? (
+        {finished && <FaCheckCircle className="text-primary h-32 w-32" />}
+        {error && (
+          <>
+            <FaCircleXmark className="text-destructive h-32 w-32 relative" />
+            <div className="fixed bottom-5 w-1/6 flex flex-row space-x-4">
+              <Button
+                variant="outline"
+                className="w-1/2"
+                onClick={() => onCancel()}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="w-1/2"
+                onClick={() => {
+                  setLink("");
+                  onRetry();
+                }}
+              >
+                Retry
+              </Button>
+            </div>
+          </>
+        )}
+        {scanning && !finished && !error && (
           <l-helix size={200} speed={2.5} color="hsl(var(--primary))"></l-helix>
-        ) : (
+        )}
+        {!scanning && !finished && !error && (
           <div className="h-full w-full mx-4 flex flex-col items-center justify-between">
             <div className="flex flex-row h-2/4 w-full items-center justify-around">
               <SiGithub
@@ -140,7 +171,7 @@ const Analyze = ({
             <Button
               onClick={() => {
                 setLoading(true);
-                onClick({ link: link });
+                onStart(link);
               }}
               disabled={!start || link == "" || loading}
               className="w-full mb-2"

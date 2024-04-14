@@ -30,8 +30,7 @@ type AuthParams struct {
 }
 
 type AuthResponse struct {
-	User  *types.User `json:"user"`
-	Token string      `json:"token"`
+	Token string `json:"token"`
 }
 
 type genericResp struct {
@@ -61,10 +60,7 @@ func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 	if !types.IsValidPasssword(user.EncryptedPassword, params.Password) {
 		return invalidCredentials(c)
 	}
-	resp := AuthResponse{
-		User:  user,
-		Token: CreateTokenFromUser(user),
-	}
+	resp := AuthResponse{Token: CreateTokenFromUser(user)}
 	return c.JSON(resp)
 }
 
