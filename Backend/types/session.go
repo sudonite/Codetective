@@ -23,6 +23,7 @@ type Session struct {
 	RepositoryID primitive.ObjectID `json:"repository_id"`
 	Directory    string             `json:"directory"`
 	Files        []FileFuncType     `json:"file_functions"`
+	Platform     GitPlatformType    `json:"platform"`
 	Status       SessionStatusType  `json:"status"`
 	Message      string             `json:"message"`
 	Modified     time.Time          `json:"modified"`
@@ -41,4 +42,11 @@ type FuncPostType struct {
 type SessionMessage struct {
 	Status  SessionStatusType `json:"status"`
 	Message string            `json:"message"`
+}
+
+type SessionAction struct {
+	Action   string          `json:"action"`
+	Link     string          `json:"link"`
+	Platform GitPlatformType `json:"platform"`
+	Private  bool            `json:"priv"`
 }

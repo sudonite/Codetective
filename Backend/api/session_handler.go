@@ -71,7 +71,7 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 
 	session := h.store.Session.GetSession(user)
 
-	go h.MessageReader(c, session)
+	go h.MessageReader(c, session, user)
 
 	for running {
 		switch session.Status {
@@ -106,13 +106,18 @@ func (h *SessionHandler) UpdateQueue(session *types.Session) {
 	h.store.Session.ChangeMessage(session, fmt.Sprintf("You are currently number %v in line", h.store.Session.GetPosition(session)))
 }
 
-func (h *SessionHandler) PrepareRepository(session *types.Session, link string) error {
-	if link == "" {
+func (h *SessionHandler) PrepareRepository(session *types.Session, user *types.User, msg *types.SessionAction) error {
+	if msg.Link == "" {
 		return fmt.Errorf("link is empty")
 	}
 
+	key, err := h.store.GitKey.GetGitKeyByPlatform(context.Background(), user, msg.Platform)
+	if err != nil {
+		return fmt.Errorf("cannot find git key for this platform")
+	}
+
 	h.store.Session.ChangeMessage(session, "Cloning repository")
-	if err := h.store.Session.CloneRepository(session, link); err != nil {
+	if err := h.store.Session.CloneRepository(session, user, key, msg.Link, msg.Private); err != nil {
 		return fmt.Errorf("wrong link or repository is private")
 	}
 
@@ -127,40 +132,40 @@ func (h *SessionHandler) PrepareRepository(session *types.Session, link string) 
 	return nil
 }
 
-func (h *SessionHandler) MessageReader(c *websocket.Conn, session *types.Session) {
-	var recv map[string]string
-	for {
-		err := c.ReadJSON(&recv)
+func (h *SessionHandler) MessageReader(c *websocket.Conn, session *types.Session, user *types.User) {
+	defer c.Close()
+	var msg *types.SessionAction
+	running := true
+
+	for running {
+		err := c.ReadJSON(&msg)
 		if err != nil {
 			break
 		}
 
-		if action, ok := recv["action"]; ok {
-			switch action {
-			case "start":
-				if session.Status == types.WaitingForClient {
-					if link, ok := recv["link"]; ok {
-						if err = h.PrepareRepository(session, link); err != nil {
-							h.store.Session.ChangeStatus(session, types.Error)
-							h.store.Session.ChangeMessage(session, err.Error())
-						}
-					}
+		switch msg.Action {
+		case "start":
+			if session.Status == types.WaitingForClient {
+				if err := h.PrepareRepository(session, user, msg); err != nil {
+					h.store.Session.ChangeStatus(session, types.Error)
+					h.store.Session.ChangeMessage(session, err.Error())
 				}
-			case "retry":
-				if session.Status == types.Error {
-					h.store.Session.ChangeStatus(session, types.WaitingForClient)
-					h.store.Session.ChangeMessage(session, "")
-					h.store.Session.ChangeDirectory(session, "")
-					h.store.Session.TouchDate(session)
-				}
-			case "cancel":
-				// @TODO: Change Repository record status to cancelled
-				h.store.Session.ProcessStopper(session)
-				h.store.Session.DeleteSession(session)
-				c.Close()
 			}
+		case "retry":
+			if session.Status == types.Error {
+				h.store.Session.ChangeStatus(session, types.WaitingForClient)
+				h.store.Session.ChangeMessage(session, "")
+				h.store.Session.ChangeDirectory(session, "")
+				h.store.Session.TouchDate(session)
+			}
+		case "cancel":
+			// @TODO: Change Repository record status to cancelled
+			h.store.Session.ProcessStopper(session)
+			h.store.Session.DeleteSession(session)
+			running = false
 		}
-		recv = map[string]string{}
-		time.Sleep(websocketReadDelay * 10)
+
+		msg = &types.SessionAction{}
+		time.Sleep(websocketReadDelay)
 	}
 }

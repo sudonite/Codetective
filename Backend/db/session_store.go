@@ -12,43 +12,46 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/google/uuid"
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/cpp"
 	"github.com/sudonite/Codetective/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	sshcrypto "golang.org/x/crypto/ssh"
 )
 
 var (
-	fakeDelay      = time.Millisecond * 500
+	fakeDelay      = time.Millisecond * 5
 	maxSessions    = 2
-	maxSessionIdle = time.Minute * 1
+	maxSessionIdle = time.Minute * 5
 	cleanerDelay   = time.Minute * 1
 	clonePath      = "sessions"
-	extensions     = []string{".h", ".c", ".cc", ".cpp"}
+	extensions     = []string{".c", ".cc", ".cpp"}
 )
 
 type SessionStore interface {
-	SessionDaemon()                                                      //
-	SessionCleaner()                                                     //
-	SessionRunner(session *types.Session)                                // @TODO
-	SessionFinisher(session *types.Session)                              //
-	ProcessStarter(session *types.Session)                               //
-	ProcessStopper(session *types.Session)                               //
-	HandleQueue()                                                        //
-	GetSession(user *types.User) *types.Session                          //
-	GetPosition(session *types.Session) int                              //
-	AddSession(user *types.User) *types.Session                          //
-	AddFile(session *types.Session, file *types.FileFuncType)            //
-	DeleteSession(session *types.Session)                                //
-	TouchDate(session *types.Session)                                    //
-	ChangeStatus(session *types.Session, status types.SessionStatusType) //
-	ChangeMessage(session *types.Session, message string)                //
-	ChangeDirectory(session *types.Session, dir string)                  //
-	CloneRepository(session *types.Session, link string) error           // @TODO
-	GetFunctionsFromRepository(session *types.Session) error             //
-	GetCodeFromFile(file []byte, pos *types.FuncPostType) string         // @TODO
-	CountFunctions(session *types.Session) int                           //
+	SessionDaemon()                                                                 //
+	SessionCleaner()                                                                //
+	SessionRunner(*types.Session)                                                   // @TODO
+	SessionFinisher(*types.Session)                                                 //
+	ProcessStarter(*types.Session)                                                  //
+	ProcessStopper(*types.Session)                                                  //
+	HandleQueue()                                                                   //
+	GetSession(*types.User) *types.Session                                          //
+	GetPosition(*types.Session) int                                                 //
+	AddSession(*types.User) *types.Session                                          //
+	AddFile(*types.Session, *types.FileFuncType)                                    //
+	DeleteSession(*types.Session)                                                   //
+	TouchDate(*types.Session)                                                       //
+	ChangeStatus(*types.Session, types.SessionStatusType)                           //
+	ChangeMessage(*types.Session, string)                                           //
+	ChangePlatform(*types.Session, types.GitPlatformType)                           //
+	ChangeDirectory(*types.Session, string)                                         //
+	CloneRepository(*types.Session, *types.User, *types.GitKey, string, bool) error // @TODO
+	GetFunctionsFromRepository(*types.Session) error                                //
+	GetCodeFromFile([]byte, *types.FuncPostType) (string, int)                      //
+	CountFunctions(*types.Session) int                                              //
 }
 
 type WebsocketSessionStore struct {
@@ -111,8 +114,12 @@ func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
 				log.Println(err)
 			}
 			s.ChangeMessage(session, fmt.Sprintf("Analyzing function %d of %d", actual, availableFunctions))
-			code := s.GetCodeFromFile(content, &function)
+			code, lineStart := s.GetCodeFromFile(content, &function)
 			_ = code
+			_ = lineStart
+			//fmt.Println(code)
+			//fmt.Println(lineStart)
+			//fmt.Println(file.Path)
 			// @TODO: Send code to the model here in a new function
 			// And also create IF a code is exists the File (if not exists) and the Code
 			actual++
@@ -238,24 +245,40 @@ func (s *WebsocketSessionStore) ChangeMessage(session *types.Session, message st
 	s.mu.Unlock()
 }
 
+func (s *WebsocketSessionStore) ChangePlatform(session *types.Session, platform types.GitPlatformType) {
+	s.mu.Lock()
+	session.Platform = platform
+	s.mu.Unlock()
+}
+
 func (s *WebsocketSessionStore) ChangeDirectory(session *types.Session, dir string) {
 	s.mu.Lock()
 	session.Directory = dir
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) CloneRepository(session *types.Session, link string) error {
-	// @TODO: Add private repository feature
+func (s *WebsocketSessionStore) CloneRepository(session *types.Session, user *types.User, key *types.GitKey, link string, priv bool) error {
 	path := strings.ReplaceAll(uuid.New().String(), "-", "")
-	_, err := git.PlainClone(clonePath+"/"+path, false, &git.CloneOptions{
+	config := &git.CloneOptions{
 		URL:      link,
 		Progress: nil,
-	})
+	}
+	if priv {
+		sshKey := []byte(key.PrivateKey)
+		publicKey, err := ssh.NewPublicKeys("git", sshKey, "")
+		if err != nil {
+			return err
+		}
+		publicKey.HostKeyCallback = sshcrypto.InsecureIgnoreHostKey()
+		config.Auth = publicKey
+	}
+	_, err := git.PlainClone(clonePath+"/"+path, false, config)
 	if err != nil {
 		return err
 	}
 
 	s.ChangeDirectory(session, path)
+	s.ChangePlatform(session, key.Platform)
 
 	return nil
 }
@@ -319,12 +342,18 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 	return nil
 }
 
-func (s *WebsocketSessionStore) GetCodeFromFile(file []byte, pos *types.FuncPostType) string {
-	// @TODO: Refactor this function to return the code and the line number
+func (s *WebsocketSessionStore) GetCodeFromFile(file []byte, pos *types.FuncPostType) (string, int) {
 	code := string(file[pos.StartByte:pos.EndByte])
 	code = strings.ReplaceAll(code, "\n", "\\n")
 	code = strings.ReplaceAll(code, "\t", "\\t")
-	return code
+
+	lineCount := 1
+	for _, char := range file[:pos.StartByte] {
+		if char == '\n' {
+			lineCount++
+		}
+	}
+	return code, lineCount
 }
 
 func (s *WebsocketSessionStore) CountFunctions(session *types.Session) int {

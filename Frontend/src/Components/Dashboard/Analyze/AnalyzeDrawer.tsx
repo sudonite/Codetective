@@ -8,7 +8,7 @@ import Server from "@/Components/Dashboard/Analyze/Server";
 import Queue from "@/Components/Dashboard/Analyze/Queue";
 import Model from "@/Components/Dashboard/Analyze/Model";
 import Analyze from "@/Components/Dashboard/Analyze/Analyze";
-import { Message, MessageStatusType } from "@/Types";
+import { GitPlatformType, Message, MessageStatusType } from "@/Types";
 
 const AnalyzeDrawer = () => {
   const connection = useRef<WebSocket | null>(null);
@@ -41,9 +41,9 @@ const AnalyzeDrawer = () => {
     connection.current = ws;
   };
   const handleDrawerClose = () => {
+    connection.current?.close();
     setDrawerOpen(false);
     handleReset();
-    connection.current?.close();
   };
 
   const handleServerConnected = () => setServerConnected(true);
@@ -98,13 +98,22 @@ const AnalyzeDrawer = () => {
     }
   };
 
-  const handleMessageSend = (data: { [key: string]: string }) => {
+  const handleMessageSend = (data: { [key: string]: any }) => {
     connection.current?.send(JSON.stringify(data));
     handleScanStarted();
   };
 
-  const handleStartAction = (link: string) => {
-    handleMessageSend({ action: "start", link });
+  const handleStartAction = (
+    link: string,
+    platform: GitPlatformType,
+    priv: boolean
+  ) => {
+    handleMessageSend({
+      action: "start",
+      link,
+      platform,
+      priv,
+    });
   };
   const handleRetryAction = () => {
     handleMessageSend({ action: "retry" });

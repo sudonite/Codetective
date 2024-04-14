@@ -7,6 +7,8 @@ import { AiOutlineLoading } from "react-icons/ai";
 import { SiGithub, SiGitlab, SiGitea, SiBitbucket } from "react-icons/si";
 import { Input } from "@/Components/UI/Input";
 import { Button } from "@/Components/UI/Button";
+import { Switch } from "@/Components/UI/Switch";
+import { Label } from "@/Components/UI/Label";
 import { cn } from "@/Utils";
 import { useProfile } from "@/Contexts/ProfileContext";
 import { GitKeys, GitPlatformType } from "@/Types";
@@ -20,10 +22,75 @@ interface AnalyzeProps {
   progress: string;
   finished: boolean;
   error: boolean;
-  onStart: (link: string) => void;
+  onStart: (link: string, platform: GitPlatformType, priv: boolean) => void;
   onRetry: () => void;
   onCancel: () => void;
 }
+
+interface PlatformCardProps {
+  platform: GitPlatformType;
+  start: boolean;
+  loading: boolean;
+  connected: boolean;
+  privRepo: boolean;
+  selected: GitPlatformType | null;
+  onClick: (platform: GitPlatformType) => void;
+}
+
+const PlatformCard = ({
+  platform,
+  start,
+  loading,
+  connected,
+  privRepo,
+  selected,
+  onClick,
+}: PlatformCardProps) => {
+  const classNames = cn(
+    "w-24 h-24 border rounded-lg p-4",
+    start && !loading
+      ? connected
+        ? "text-primary"
+        : "text-destructive"
+      : connected
+      ? "text-primary/50"
+      : "text-destructive/50",
+    selected === platform && "bg-accent border-primary",
+    !connected && privRepo
+      ? "cursor-not-allowed"
+      : "hover:bg-accent hover:border-primary cursor-pointer"
+  );
+  switch (platform) {
+    case GitPlatformType.Github:
+      return (
+        <SiGithub
+          className={classNames}
+          onClick={() => !(!connected && privRepo) && onClick(platform)}
+        />
+      );
+    case GitPlatformType.Gitlab:
+      return (
+        <SiGitlab
+          className={classNames}
+          onClick={() => !(!connected && privRepo) && onClick(platform)}
+        />
+      );
+    case GitPlatformType.Gitea:
+      return (
+        <SiGitea
+          className={classNames}
+          onClick={() => !(!connected && privRepo) && onClick(platform)}
+        />
+      );
+    case GitPlatformType.Bitbucket:
+      return (
+        <SiBitbucket
+          className={classNames}
+          onClick={() => !(!connected && privRepo) && onClick(platform)}
+        />
+      );
+  }
+};
 
 const Analyze = ({
   start,
@@ -38,6 +105,9 @@ const Analyze = ({
   const { profile } = useProfile();
   const [link, setLink] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [privateRepo, setPrivateRepo] = useState<boolean>(false);
+  const [selectedPlatform, setSelectedPlatform] =
+    useState<GitPlatformType | null>(null);
 
   const gitConnected = (platform: GitPlatformType): boolean => {
     const keys = profile?.gitKeys as GitKeys;
@@ -69,15 +139,20 @@ const Analyze = ({
     <div className="h-full w-1/4 flex flex-col">
       <div className="h-10">
         <h4 className="text-center scroll-m-20 text-xl font-semibold tracking-tight">
-          {finished && "Repository Analyzed"}
-          {error && "Failed to Analyze Repository"}
-          {scanning && !finished && !error && "Analyzing Repository"}
-          {!scanning && !finished && !error && "Waiting for Model"}
+          {error
+            ? "Failed to Analyze Repository"
+            : finished
+            ? "Repository Analyzed"
+            : start
+            ? "Analyzing Repository"
+            : "Waiting for Model"}
         </h4>
       </div>
       <div className="h-6">
         <p className="text-center text-sm text-muted-foreground">
-          {capitalizeFirstLetter(progress)}
+          {scanning
+            ? capitalizeFirstLetter(progress)
+            : "Configure the repository to analyze"}
         </p>
       </div>
       <div className="h-full flex items-center justify-center">
@@ -109,72 +184,80 @@ const Analyze = ({
           <l-helix size={200} speed={2.5} color="hsl(var(--primary))"></l-helix>
         )}
         {!scanning && !finished && !error && (
-          <div className="h-full w-full mx-4 flex flex-col items-center justify-between">
-            <div className="flex flex-row h-2/4 w-full items-center justify-around">
-              <SiGithub
-                className={cn(
-                  "w-14 h-14",
-                  start && !loading
-                    ? githubConnected
-                      ? "text-primary"
-                      : "text-destructive"
-                    : githubConnected
-                    ? "text-primary/50"
-                    : "text-destructive/50"
-                )}
+          <div className="h-full w-full mx-4 flex flex-col items-center justify-evenly">
+            <div className="flex flex-row w-full justify-between">
+              <PlatformCard
+                platform={GitPlatformType.Github}
+                start={start}
+                loading={loading}
+                privRepo={privateRepo}
+                connected={githubConnected}
+                selected={selectedPlatform}
+                onClick={setSelectedPlatform}
               />
-              <SiGitlab
-                className={cn(
-                  "w-14 h-14",
-                  start && !loading
-                    ? gitlabConnected
-                      ? "text-primary"
-                      : "text-destructive"
-                    : gitlabConnected
-                    ? "text-primary/50"
-                    : "text-destructive/50"
-                )}
+              <PlatformCard
+                platform={GitPlatformType.Gitlab}
+                start={start}
+                loading={loading}
+                privRepo={privateRepo}
+                connected={gitlabConnected}
+                selected={selectedPlatform}
+                onClick={setSelectedPlatform}
               />
-              <SiGitea
-                className={cn(
-                  "w-14 h-14",
-                  start && !loading
-                    ? giteaConnected
-                      ? "text-primary"
-                      : "text-destructive"
-                    : giteaConnected
-                    ? "text-primary/50"
-                    : "text-destructive/50"
-                )}
+              <PlatformCard
+                platform={GitPlatformType.Gitea}
+                start={start}
+                privRepo={privateRepo}
+                loading={loading}
+                connected={giteaConnected}
+                selected={selectedPlatform}
+                onClick={setSelectedPlatform}
               />
-              <SiBitbucket
-                className={cn(
-                  "w-14 h-14",
-                  start && !loading
-                    ? bitbucketConnected
-                      ? "text-primary"
-                      : "text-destructive"
-                    : bitbucketConnected
-                    ? "text-primary/50"
-                    : "text-destructive/50"
-                )}
+              <PlatformCard
+                platform={GitPlatformType.Bitbucket}
+                start={start}
+                privRepo={privateRepo}
+                loading={loading}
+                connected={bitbucketConnected}
+                selected={selectedPlatform}
+                onClick={setSelectedPlatform}
               />
+            </div>
+            <div className="w-full flex items-center space-x-2 rounded-lg border p-2">
+              <Switch
+                id="private"
+                disabled={
+                  !start ||
+                  loading ||
+                  selectedPlatform === null ||
+                  (selectedPlatform !== null &&
+                    profile?.gitKeys.find(
+                      item => item.platform === selectedPlatform
+                    )?.key === "")
+                }
+                checked={privateRepo}
+                onCheckedChange={e => setPrivateRepo(e)}
+              />
+              <Label htmlFor="private">Private Repository</Label>
             </div>
             <Input
               id="link"
               value={link}
               onChange={e => setLink(e.target.value)}
               type="text"
-              disabled={!start || loading}
-              placeholder="Repository or SSH Link"
+              autoComplete="off"
+              disabled={!start || loading || selectedPlatform === null}
+              placeholder={privateRepo ? "SSH URL" : "HTTP or SSH URL"}
             />
             <Button
               onClick={() => {
                 setLoading(true);
-                onStart(link);
+                onStart(link, selectedPlatform as GitPlatformType, privateRepo);
               }}
-              disabled={!start || link == "" || loading}
-              className="w-full mb-2"
+              disabled={
+                !start || link == "" || loading || selectedPlatform === null
+              }
+              className="w-full"
             >
               {loading ? (
                 <>

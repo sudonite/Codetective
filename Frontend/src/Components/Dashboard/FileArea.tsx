@@ -44,10 +44,10 @@ const FileArea = ({ files, selectedFile, onClick }: FileAreaProps) => {
                 <Card
                   key={file.id}
                   className={cn(
-                    "m-4 p-2 cursor-pointer",
+                    "m-4 p-2 cursor-pointer border rounded-lg",
                     selectedFile?.id === file.id
-                      ? "bg-primary/50 hover:bg-primary/50"
-                      : "bg-secondary/50 hover:bg-primary/50"
+                      ? "bg-primary/50 hover:bg-primary/50 border-secondary"
+                      : "bg-secondary/50 hover:bg-primary/50 hover:border-secondary"
                   )}
                   onClick={() => onClick(file)}
                 >

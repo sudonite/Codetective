@@ -24,7 +24,7 @@ type UserStore interface {
 	GetUserByID(context.Context, string) (*types.User, error)
 	InsertUser(context.Context, *types.User) (*types.User, error)
 	DeleteUser(context.Context, string) error
-	UpdateUser(ctx context.Context, filter Map, params types.UpdateUserParams) error
+	UpdateUser(context.Context, Map, types.UpdateUserParams) error
 }
 
 type MongoUserStore struct {

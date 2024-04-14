@@ -21,6 +21,7 @@ type GitKeyStore interface {
 	UpdateGitKey(context.Context, Map, types.UpdateGitKeyParams) error
 	GetGitKeyByID(context.Context, string) (*types.GitKey, error)
 	GetGitKeysByUserID(context.Context, string) ([]*types.GitKey, error)
+	GetGitKeyByPlatform(context.Context, *types.User, types.GitPlatformType) (*types.GitKey, error)
 	InsertEmptyGitKeys(context.Context, primitive.ObjectID) error
 	DeleteGitKey(context.Context, string) error
 }
@@ -89,6 +90,15 @@ func (s *MongoGitKeyStore) GetGitKeysByUserID(ctx context.Context, id string) ([
 		return nil, err
 	}
 	return gitKeys, nil
+}
+
+func (s *MongoGitKeyStore) GetGitKeyByPlatform(ctx context.Context, user *types.User, platform types.GitPlatformType) (*types.GitKey, error) {
+	filter := Map{"userID": user.ID, "platform": platform}
+	var gitKey types.GitKey
+	if err := s.coll.FindOne(ctx, filter).Decode(&gitKey); err != nil {
+		return nil, err
+	}
+	return &gitKey, nil
 }
 
 func (s *MongoGitKeyStore) DeleteGitKey(ctx context.Context, id string) error {

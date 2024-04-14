@@ -113,9 +113,9 @@ const RepositoryArea = ({
                 <Card
                   key={repository.id}
                   className={cn(
-                    "m-4 cursor-pointer",
+                    "m-4 hover:cursor-pointer border rounded-lg",
                     repository.id === selectedRepository?.id
-                      ? "bg-primary/50 hover:bg-primary/50"
+                      ? "bg-primary/50 hover:bg-primary/50 border-primary"
                       : "bg-background hover:bg-accent"
                   )}
                   onClick={() => onClick(repository)}
