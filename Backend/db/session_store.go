@@ -20,9 +20,9 @@ import (
 )
 
 var (
-	fakeDelay      = time.Millisecond * 3
+	fakeDelay      = time.Millisecond * 500
 	maxSessions    = 2
-	maxSessionIdle = time.Minute * 5
+	maxSessionIdle = time.Minute * 1
 	cleanerDelay   = time.Minute * 1
 	clonePath      = "sessions"
 	extensions     = []string{".h", ".c", ".cc", ".cpp"}
@@ -30,7 +30,7 @@ var (
 
 type SessionStore interface {
 	SessionDaemon()                                                      //
-	SessionCleaner()                                                     // @TODO
+	SessionCleaner()                                                     //
 	SessionRunner(session *types.Session)                                // @TODO
 	SessionFinisher(session *types.Session)                              //
 	ProcessStarter(session *types.Session)                               //
@@ -76,13 +76,25 @@ func (s *WebsocketSessionStore) SessionDaemon() {
 func (s *WebsocketSessionStore) SessionCleaner() {
 	for {
 		time.Sleep(cleanerDelay)
+		scanDir := []string{}
+
+		dir, _ := os.Open(clonePath)
+		fileInfos, _ := dir.Readdir(-1)
+		dir.Close()
+
 		for _, v := range s.sessions {
 			if time.Since(v.Modified) > maxSessionIdle && v.Status != types.Queue && v.Status != types.Scanning {
 				s.DeleteSession(v)
+			} else {
+				scanDir = append(scanDir, v.Directory)
 			}
 		}
-		// @TODO: Remove unused folders also here
-		// And check other places where the session is deleted at the correct way
+
+		for _, fileInfo := range fileInfos {
+			if fileInfo.IsDir() && !slices.Contains(scanDir, fileInfo.Name()) {
+				os.RemoveAll(clonePath + "/" + fileInfo.Name())
+			}
+		}
 	}
 }
 
@@ -94,7 +106,7 @@ func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
 
 	for _, file := range session.Files {
 		for _, function := range file.FuncPos {
-			content, err := os.ReadFile(session.Directory + file.Path)
+			content, err := os.ReadFile(clonePath + "/" + session.Directory + file.Path)
 			if err != nil {
 				log.Println(err)
 			}
@@ -197,6 +209,7 @@ func (s *WebsocketSessionStore) AddFile(session *types.Session, file *types.File
 }
 
 func (s *WebsocketSessionStore) DeleteSession(session *types.Session) {
+	os.RemoveAll(clonePath + session.Directory)
 	for k, v := range s.sessions {
 		if v == session {
 			s.mu.Lock()
@@ -204,7 +217,6 @@ func (s *WebsocketSessionStore) DeleteSession(session *types.Session) {
 			s.mu.Unlock()
 			break
 		}
-
 	}
 }
 
@@ -234,8 +246,8 @@ func (s *WebsocketSessionStore) ChangeDirectory(session *types.Session, dir stri
 
 func (s *WebsocketSessionStore) CloneRepository(session *types.Session, link string) error {
 	// @TODO: Add private repository feature
-	path := clonePath + "/" + strings.ReplaceAll(uuid.New().String(), "-", "")
-	_, err := git.PlainClone(path, false, &git.CloneOptions{
+	path := strings.ReplaceAll(uuid.New().String(), "-", "")
+	_, err := git.PlainClone(clonePath+"/"+path, false, &git.CloneOptions{
 		URL:      link,
 		Progress: nil,
 	})
@@ -250,7 +262,8 @@ func (s *WebsocketSessionStore) CloneRepository(session *types.Session, link str
 
 func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Session) error {
 	files := []string{}
-	err := filepath.Walk(session.Directory, func(path string, info os.FileInfo, err error) error {
+	dir := clonePath + "/" + session.Directory
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -259,7 +272,7 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 		}
 		ext := filepath.Ext(path)
 		if slices.Contains(extensions, ext) {
-			files = append(files, strings.TrimPrefix(path, session.Directory))
+			files = append(files, strings.TrimPrefix(path, dir))
 		}
 		return nil
 	})
@@ -287,7 +300,7 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 
 	for _, file := range files {
 		funcBytes = []types.FuncPostType{}
-		content, err := os.ReadFile(session.Directory + file)
+		content, err := os.ReadFile(clonePath + "/" + session.Directory + file)
 		if err != nil {
 			return err
 		}
