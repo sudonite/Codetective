@@ -55,7 +55,8 @@ const FileArea = ({ files, selectedFile, onClick }: FileAreaProps) => {
                     <div className="flex flex-row justify-start items-center gap-2">
                       <FileIcon extension={file.extension} />
                       <h4 className="scroll-m-20 text-md font-semibold tracking-tight">
-                        {file.name}.{file.extension}
+                        {file.name}
+                        {file.extension}
                       </h4>
                     </div>
                     <StatusBadge status={file.status} />

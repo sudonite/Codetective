@@ -1,6 +1,8 @@
 package api
 
 import (
+	"strings"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/sudonite/Codetective/db"
 	"github.com/sudonite/Codetective/types"
@@ -23,6 +25,10 @@ func (h *CodeHandler) HandleGetCodes(c *fiber.Ctx) error {
 	code, err := h.store.Code.GetCodesByFileID(c.Context(), fileID)
 	if err != nil {
 		return err
+	}
+	for _, c := range code {
+		c.Code = strings.ReplaceAll(c.Code, "\\n", "\n")
+		c.Code = strings.ReplaceAll(c.Code, "\\t", "\t")
 	}
 	return c.JSON(code)
 }

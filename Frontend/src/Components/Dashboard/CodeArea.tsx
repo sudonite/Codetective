@@ -81,7 +81,7 @@ const CodeArea = ({
             <h1 className="text-center">
               <div className="ml-3 grow flex flex-row justify-start items-center">
                 <code className="relative rounded bg-muted px-[0.5rem] py-[0.1rem] font-mono text-lg font-semibold">
-                  {file ? `${file?.path}/${file?.name}.${file?.extension}` : ""}
+                  {file ? `${file?.path}/${file?.name}${file?.extension}` : ""}
                 </code>
               </div>
             </h1>
@@ -96,9 +96,9 @@ const CodeArea = ({
           onStatusChange={onStatusChange}
         />
       </div>
-      <div className="grow">
+      <div className="grow h-full">
         {selectedCode ? (
-          <ScrollArea className="w-full h-full rounded-lg">
+          <ScrollArea className="w-full h-[calc(100vh-128px)] rounded-lg">
             {/* @TODO
                 Fix WordWrap
             */}
@@ -112,7 +112,7 @@ const CodeArea = ({
               {selectedCode.code}
             </SyntaxHighlighter>
             <ScrollBar orientation="horizontal" />
-            <ScrollBar />
+            <ScrollBar orientation="vertical" />
           </ScrollArea>
         ) : (
           <div className="flex justify-center items-center h-full">

@@ -6,6 +6,7 @@ export enum StatusType {
   Running = 2,
   Fixed = 3,
   FalsePositive = 4,
+  Cancelled = 5,
 }
 
 export enum GitPlatformType {

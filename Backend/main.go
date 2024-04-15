@@ -28,10 +28,10 @@ func main() {
 	}
 
 	var (
-		sessions          = types.Sessions{}
+		mu                = &sync.Mutex{}
+		sessions          = &types.Sessions{}
 		startCh           = make(chan *types.Session)
 		finishCh          = make(chan *types.Session)
-		mu                = &sync.Mutex{}
 		userStore         = db.NewMongoUserStore(client)
 		codeStore         = db.NewMongoCodeStore(client)
 		fileStore         = db.NewMongoFileStore(client)
@@ -40,7 +40,7 @@ func main() {
 		gitKeyStore       = db.NewMongoGitKeyStore(client)
 		apiKeyStore       = db.NewMongoAPIKeyStore(client)
 		subscriptionStore = db.NewMongoSubscriptionStore(client)
-		sessionStore      = db.NewWebsocketSessionStore(sessions, startCh, finishCh, mu)
+		sessionStore      = db.NewWebsocketSessionStore(sessions, codeStore, fileStore, repositoryStore, startCh, finishCh, mu)
 		store             = &db.Store{
 			User:         userStore,
 			Repository:   repositoryStore,

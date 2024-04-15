@@ -107,13 +107,19 @@ func (h *SessionHandler) UpdateQueue(session *types.Session) {
 }
 
 func (h *SessionHandler) PrepareRepository(session *types.Session, user *types.User, msg *types.SessionAction) error {
+	var err error
+
 	if msg.Link == "" {
 		return fmt.Errorf("link is empty")
 	}
 
-	key, err := h.store.GitKey.GetGitKeyByPlatform(context.Background(), user, msg.Platform)
-	if err != nil {
-		return fmt.Errorf("cannot find git key for this platform")
+	key := &types.GitKey{}
+
+	if msg.Private {
+		key, err = h.store.GitKey.GetGitKeyByPlatform(context.Background(), user, msg.Platform)
+		if err != nil {
+			return fmt.Errorf("cannot find git key for this platform")
+		}
 	}
 
 	h.store.Session.ChangeMessage(session, "Cloning repository")
@@ -159,7 +165,6 @@ func (h *SessionHandler) MessageReader(c *websocket.Conn, session *types.Session
 				h.store.Session.TouchDate(session)
 			}
 		case "cancel":
-			// @TODO: Change Repository record status to cancelled
 			h.store.Session.ProcessStopper(session)
 			h.store.Session.DeleteSession(session)
 			running = false

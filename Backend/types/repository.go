@@ -19,6 +19,7 @@ const (
 	Running
 	Fixed
 	FalsePositive
+	Cancelled
 )
 
 type GitPlatformType int

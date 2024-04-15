@@ -79,7 +79,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "main",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -112,7 +112,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "utility",
-				Extension: "cpp",
+				Extension: ",cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -134,7 +134,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "test",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -150,7 +150,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "data",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -174,7 +174,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "gui",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -189,7 +189,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "network",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -216,7 +216,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "math",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -264,7 +264,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "image",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -279,7 +279,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "audio",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -311,7 +311,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "store",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -325,7 +325,7 @@ var repositoryies = []RepositorySeed{
 			},
 			{Path: "src/handler",
 				Name:      "write",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -346,7 +346,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "handle",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -394,7 +394,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "server",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -409,7 +409,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "send",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -424,7 +424,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "read",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -472,7 +472,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "reset",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -511,7 +511,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "replace",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -547,7 +547,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "calculate",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -562,7 +562,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "reload",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{
@@ -583,7 +583,7 @@ var repositoryies = []RepositorySeed{
 			{
 				Path:      "src/handler",
 				Name:      "config",
-				Extension: "cpp",
+				Extension: ".cpp",
 				Status:    types.Vulnerable,
 				Date:      time.Now(),
 				Codes: []CodeSeed{

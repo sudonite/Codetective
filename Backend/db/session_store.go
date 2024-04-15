@@ -3,9 +3,9 @@ package db
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 	"sync"
@@ -31,38 +31,43 @@ var (
 )
 
 type SessionStore interface {
-	SessionDaemon()                                                                 //
-	SessionCleaner()                                                                //
-	SessionRunner(*types.Session)                                                   // @TODO
-	SessionFinisher(*types.Session)                                                 //
-	ProcessStarter(*types.Session)                                                  //
-	ProcessStopper(*types.Session)                                                  //
-	HandleQueue()                                                                   //
-	GetSession(*types.User) *types.Session                                          //
-	GetPosition(*types.Session) int                                                 //
-	AddSession(*types.User) *types.Session                                          //
-	AddFile(*types.Session, *types.FileFuncType)                                    //
-	DeleteSession(*types.Session)                                                   //
-	TouchDate(*types.Session)                                                       //
-	ChangeStatus(*types.Session, types.SessionStatusType)                           //
-	ChangeMessage(*types.Session, string)                                           //
-	ChangePlatform(*types.Session, types.GitPlatformType)                           //
-	ChangeDirectory(*types.Session, string)                                         //
-	CloneRepository(*types.Session, *types.User, *types.GitKey, string, bool) error // @TODO
-	GetFunctionsFromRepository(*types.Session) error                                //
-	GetCodeFromFile([]byte, *types.FuncPostType) (string, int)                      //
-	CountFunctions(*types.Session) int                                              //
+	SessionDaemon()
+	SessionCleaner()
+	SessionRunner(*types.Session)
+	SessionFinisher(*types.Session)
+	ProcessStarter(*types.Session)
+	ProcessStopper(*types.Session)
+	HandleQueue()
+	HandleModel(string) bool
+	GetSession(*types.User) *types.Session
+	GetPosition(*types.Session) int
+	AddSession(*types.User) *types.Session
+	AddFile(*types.Session, *types.FileFuncType)
+	DeleteSession(*types.Session)
+	TouchDate(*types.Session)
+	ChangeStatus(*types.Session, types.SessionStatusType)
+	ChangeMessage(*types.Session, string)
+	ChangeName(*types.Session, string)
+	ChangePlatform(*types.Session, types.GitPlatformType)
+	ChangeDirectory(*types.Session, string)
+	CloneRepository(*types.Session, *types.User, *types.GitKey, string, bool) error
+	GetFunctionsFromRepository(*types.Session) error
+	GetCodeFromFile([]byte, *types.FuncPostType) (string, int)
+	CountFunctions(*types.Session) int
 }
 
 type WebsocketSessionStore struct {
-	sessions types.Sessions
-	sc       chan *types.Session
-	fc       chan *types.Session
-	mu       *sync.Mutex
+	sessions  *types.Sessions // @TODO: Use Pointer
+	codeStore *MongoCodeStore
+	fileStore *MongoFileStore
+	repoStore *MongoRepositoryStore
+	sc        chan *types.Session
+	fc        chan *types.Session
+	mu        *sync.Mutex
 }
 
-func NewWebsocketSessionStore(sessions types.Sessions, sc chan *types.Session, fc chan *types.Session, mu *sync.Mutex) *WebsocketSessionStore {
-	return &WebsocketSessionStore{sessions, sc, fc, mu}
+func NewWebsocketSessionStore(sessions *types.Sessions, cs *MongoCodeStore, fs *MongoFileStore, rs *MongoRepositoryStore, sc chan *types.Session, fc chan *types.Session, mu *sync.Mutex) *WebsocketSessionStore {
+	return &WebsocketSessionStore{sessions, cs, fs, rs, sc, fc, mu}
 }
 
 func (s *WebsocketSessionStore) SessionDaemon() {
@@ -85,7 +90,7 @@ func (s *WebsocketSessionStore) SessionCleaner() {
 		fileInfos, _ := dir.Readdir(-1)
 		dir.Close()
 
-		for _, v := range s.sessions {
+		for _, v := range *s.sessions {
 			if time.Since(v.Modified) > maxSessionIdle && v.Status != types.Queue && v.Status != types.Scanning {
 				s.DeleteSession(v)
 			} else {
@@ -95,38 +100,90 @@ func (s *WebsocketSessionStore) SessionCleaner() {
 
 		for _, fileInfo := range fileInfos {
 			if fileInfo.IsDir() && !slices.Contains(scanDir, fileInfo.Name()) {
-				os.RemoveAll(clonePath + "/" + fileInfo.Name())
+				os.RemoveAll(filepath.Join(clonePath, fileInfo.Name()))
 			}
 		}
 	}
 }
 
 func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
-	// @TODO: Create Repository instance and save it to the database
-	s.ChangeStatus(session, types.Scanning)
-	availableFunctions := s.CountFunctions(session)
+	var userID primitive.ObjectID
+	for k, v := range *s.sessions {
+		if v == session {
+			userID = k
+			break
+		}
+	}
+
+	repository, _ := s.repoStore.InsertRepository(context.Background(), &types.Repository{
+		UserID:   userID,
+		Name:     session.Name,
+		URL:      session.URL,
+		Status:   types.Running,
+		Platform: types.GitPlatformType(session.Platform),
+		Date:     time.Now(),
+	})
+
 	actual := 1
+	vulnRepo := false
+	availableFunctions := s.CountFunctions(session)
+
+	s.ChangeStatus(session, types.Scanning)
 
 	for _, file := range session.Files {
 		for _, function := range file.FuncPos {
-			content, err := os.ReadFile(clonePath + "/" + session.Directory + file.Path)
+			content, err := os.ReadFile(filepath.Join(clonePath, session.Directory, file.Path))
 			if err != nil {
-				log.Println(err)
+				continue
 			}
+
 			s.ChangeMessage(session, fmt.Sprintf("Analyzing function %d of %d", actual, availableFunctions))
 			code, lineStart := s.GetCodeFromFile(content, &function)
-			_ = code
-			_ = lineStart
-			//fmt.Println(code)
-			//fmt.Println(lineStart)
-			//fmt.Println(file.Path)
-			// @TODO: Send code to the model here in a new function
-			// And also create IF a code is exists the File (if not exists) and the Code
+
+			vuln := s.HandleModel(code)
+
+			if vuln {
+				vulnRepo = true
+				path := filepath.Dir(file.Path)[1:]
+				ext := filepath.Ext(file.Path)
+				name := strings.TrimSuffix(filepath.Base(file.Path), ext)
+
+				savedFile, err := s.fileStore.GetFileByParams(context.Background(), repository.ID.Hex(), path, name, ext)
+				if err != nil {
+					savedFile, _ = s.fileStore.InsertFile(context.Background(), &types.File{
+						RepositoryID: repository.ID,
+						Path:         path,
+						Name:         name,
+						Extension:    ext,
+						Status:       types.Vulnerable,
+						Date:         time.Now(),
+					})
+				}
+
+				s.codeStore.InsertCode(context.Background(), &types.Code{
+					FileID:    savedFile.ID,
+					Status:    types.Vulnerable,
+					LineStart: lineStart,
+					Code:      code,
+					Date:      time.Now(),
+				})
+			}
+
 			actual++
 			time.Sleep(fakeDelay)
 		}
 	}
 
+	var repoParams types.UpdateRepositoryParams
+	repoFilter := Map{"_id": repository.ID.Hex()}
+
+	if vulnRepo {
+		repoParams = types.UpdateRepositoryParams{Status: types.Vulnerable}
+	} else {
+		repoParams = types.UpdateRepositoryParams{Status: types.Vulnerable}
+	}
+
+	s.repoStore.UpdateRepository(context.Background(), repoFilter, repoParams)
 	s.ProcessStopper(session)
 }
 
@@ -152,20 +209,20 @@ func (s *WebsocketSessionStore) ProcessStopper(session *types.Session) {
 
 func (s *WebsocketSessionStore) HandleQueue() {
 	scanning := 0
-	for _, v := range s.sessions {
+	for _, v := range *s.sessions {
 		if v.Status != types.Queue {
 			scanning++
 		}
 	}
 	for i := 0; i < maxSessions-scanning; i++ {
 		var key primitive.ObjectID
-		for k, v := range s.sessions {
-			if v.Status == types.Queue && (key == primitive.NilObjectID || v.Modified.Before(s.sessions[key].Modified)) {
+		for k, v := range *s.sessions {
+			if v.Status == types.Queue && (key == primitive.NilObjectID || v.Modified.Before((*s.sessions)[key].Modified)) {
 				key = k
 			}
 		}
 		if key != primitive.NilObjectID {
-			session := s.sessions[key]
+			session := (*s.sessions)[key]
 			s.ChangeStatus(session, types.Connecting)
 			s.ChangeMessage(session, "")
 			s.TouchDate(session)
@@ -173,8 +230,13 @@ func (s *WebsocketSessionStore) HandleQueue() {
 	}
 }
 
+func (s *WebsocketSessionStore) HandleModel(code string) bool {
+	//return rand.New(rand.NewSource(time.Now().UnixNano())).Intn(100) <= 2
+	return true
+}
+
 func (s *WebsocketSessionStore) GetSession(user *types.User) *types.Session {
-	if session, ok := s.sessions[user.ID]; ok {
+	if session, ok := (*s.sessions)[user.ID]; ok {
 		return session
 	}
 	return s.AddSession(user)
@@ -184,7 +246,7 @@ func (s *WebsocketSessionStore) GetPosition(session *types.Session) int {
 	var (
 		position = 1
 	)
-	for _, v := range s.sessions {
+	for _, v := range *s.sessions {
 		if v.Status == types.Queue && v.Modified.Before(session.Modified) {
 			position++
 		}
@@ -196,16 +258,15 @@ func (s *WebsocketSessionStore) AddSession(user *types.User) *types.Session {
 	defer s.mu.Unlock()
 	s.mu.Lock()
 	newSession := &types.Session{
-		RepositoryID: primitive.NewObjectID(),
-		Directory:    "",
-		Status:       types.Queue,
-		Message:      "",
-		Modified:     time.Now(),
+		Directory: "",
+		Status:    types.Queue,
+		Message:   "",
+		Modified:  time.Now(),
 	}
-	if len(s.sessions) < maxSessions {
+	if len(*s.sessions) < maxSessions {
 		newSession.Status = types.Connecting
 	}
-	s.sessions[user.ID] = newSession
+	(*s.sessions)[user.ID] = newSession
 	return newSession
 }
 
@@ -216,11 +277,11 @@ func (s *WebsocketSessionStore) AddFile(session *types.Session, file *types.File
 }
 
 func (s *WebsocketSessionStore) DeleteSession(session *types.Session) {
-	os.RemoveAll(clonePath + session.Directory)
-	for k, v := range s.sessions {
+	os.RemoveAll(filepath.Join(clonePath, session.Directory))
+	for k, v := range *s.sessions {
 		if v == session {
 			s.mu.Lock()
-			delete(s.sessions, k)
+			delete(*s.sessions, k)
 			s.mu.Unlock()
 			break
 		}
@@ -245,6 +306,12 @@ func (s *WebsocketSessionStore) ChangeMessage(session *types.Session, message st
 	s.mu.Unlock()
 }
 
+func (s *WebsocketSessionStore) ChangeName(session *types.Session, name string) {
+	s.mu.Lock()
+	session.Name = name
+	s.mu.Unlock()
+}
+
 func (s *WebsocketSessionStore) ChangePlatform(session *types.Session, platform types.GitPlatformType) {
 	s.mu.Lock()
 	session.Platform = platform
@@ -258,11 +325,22 @@ func (s *WebsocketSessionStore) ChangeDirectory(session *types.Session, dir stri
 }
 
 func (s *WebsocketSessionStore) CloneRepository(session *types.Session, user *types.User, key *types.GitKey, link string, priv bool) error {
+	var (
+		repoName = "Unknown"
+	)
+
+	re := regexp.MustCompile(`(?:\/|:)([^\/:]+)\/([^\/:]+?)(?:\.git)?$`)
+	match := re.FindStringSubmatch(link)
+	if len(match) >= 3 {
+		repoName = strings.ToUpper(string(match[2][0])) + match[2][1:]
+	}
+
 	path := strings.ReplaceAll(uuid.New().String(), "-", "")
 	config := &git.CloneOptions{
 		URL:      link,
 		Progress: nil,
 	}
+
 	if priv {
 		sshKey := []byte(key.PrivateKey)
 		publicKey, err := ssh.NewPublicKeys("git", sshKey, "")
@@ -272,20 +350,24 @@ func (s *WebsocketSessionStore) CloneRepository(session *types.Session, user *ty
 		publicKey.HostKeyCallback = sshcrypto.InsecureIgnoreHostKey()
 		config.Auth = publicKey
 	}
-	_, err := git.PlainClone(clonePath+"/"+path, false, config)
+	_, err := git.PlainClone(filepath.Join(clonePath, path), false, config)
 	if err != nil {
 		return err
 	}
 
+	s.ChangeName(session, repoName)
 	s.ChangeDirectory(session, path)
-	s.ChangePlatform(session, key.Platform)
+	s.ChangePlatform(session, session.Platform)
 
 	return nil
 }
 
 func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Session) error {
-	files := []string{}
-	dir := clonePath + "/" + session.Directory
+	var (
+		files = []string{}
+		dir   = filepath.Join(clonePath, session.Directory)
+	)
+
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -323,7 +405,7 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 
 	for _, file := range files {
 		funcBytes = []types.FuncPostType{}
-		content, err := os.ReadFile(clonePath + "/" + session.Directory + file)
+		content, err := os.ReadFile(filepath.Join(clonePath, session.Directory, file))
 		if err != nil {
 			return err
 		}
@@ -335,7 +417,7 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 
 		getPos(tree.RootNode(), &funcBytes)
 		s.AddFile(session, &types.FileFuncType{
-			Path:    strings.TrimPrefix(file, session.Directory),
+			Path:    file,
 			FuncPos: funcBytes,
 		})
 	}

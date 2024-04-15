@@ -17,6 +17,7 @@ type FileStore interface {
 	UpdateFile(context.Context, Map, types.UpdateFileParams) error
 	GetFilesByRepositoryID(context.Context, string) ([]*types.File, error)
 	GetFileByID(context.Context, string) (*types.File, error)
+	GetFileByParams(context.Context, string, string, string, string) (*types.File, error)
 }
 
 type MongoFileStore struct {
@@ -82,4 +83,17 @@ func (s *MongoFileStore) GetFileByID(ctx context.Context, id string) (*types.Fil
 		return nil, err
 	}
 	return file, nil
+}
+
+func (s *MongoFileStore) GetFileByParams(ctx context.Context, repoID string, path string, name string, ext string) (*types.File, error) {
+	oid, err := primitive.ObjectIDFromHex(repoID)
+	if err != nil {
+		return nil, err
+	}
+	resp := s.coll.FindOne(ctx, bson.M{"repositoryID": oid, "path": path, "name": name, "extension": ext})
+	var f *types.File
+	if err := resp.Decode(&f); err != nil {
+		return nil, err
+	}
+	return f, nil
 }

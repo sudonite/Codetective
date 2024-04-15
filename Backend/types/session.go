@@ -20,13 +20,14 @@ const (
 type Sessions map[primitive.ObjectID]*Session
 
 type Session struct {
-	RepositoryID primitive.ObjectID `json:"repository_id"`
-	Directory    string             `json:"directory"`
-	Files        []FileFuncType     `json:"file_functions"`
-	Platform     GitPlatformType    `json:"platform"`
-	Status       SessionStatusType  `json:"status"`
-	Message      string             `json:"message"`
-	Modified     time.Time          `json:"modified"`
+	Directory string            `json:"directory"`
+	Name      string            `json:"name"`
+	URL       string            `json:"url"`
+	Files     []FileFuncType    `json:"file_functions"`
+	Platform  GitPlatformType   `json:"platform"`
+	Status    SessionStatusType `json:"status"`
+	Message   string            `json:"message"`
+	Modified  time.Time         `json:"modified"`
 }
 
 type FileFuncType struct {
