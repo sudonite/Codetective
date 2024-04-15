@@ -1,9 +1,4 @@
-FROM golang:alpine3.19
-
-# https://github.com/alpinelinux/docker-alpine/issues/98
-RUN sed -i 's/https/http/' /etc/apk/repositories
-
-RUN apk add --no-cache make
+FROM golang:1.22.2
 
 WORKDIR /app
 
