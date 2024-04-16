@@ -103,23 +103,6 @@ func AddGitKey(store *db.Store, userID primitive.ObjectID, publicKey, privateKey
 	return insertedKey
 }
 
-func AddAPIKey(store *db.Store, userID primitive.ObjectID, key string, platform types.APIPlatformType, date time.Time) *types.APIKey {
-	newKey, err := types.NewAPIKeyFromParams(types.CreateAPIKeyParams{
-		UserID:   userID,
-		Key:      key,
-		Platform: platform,
-		Date:     date,
-	})
-	if err != nil {
-		log.Fatal(err)
-	}
-	insertedKey, err := store.APIKey.InsertAPIKey(context.TODO(), newKey)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return insertedKey
-}
-
 func AddSubscription(store *db.Store, userID primitive.ObjectID, plan types.SubscriptionPlanType, endDate time.Time) *types.Subscription {
 	newSubscription, err := types.NewSubscriptionFromParams(types.CreateSubscriptionParams{
 		UserID:  userID,

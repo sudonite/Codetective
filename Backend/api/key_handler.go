@@ -4,7 +4,6 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/pem"
-	"fmt"
 	mrand "math/rand"
 	"strings"
 	"time"
@@ -89,62 +88,6 @@ func (h *KeyHandler) HandlePostGitKey(c *fiber.Ctx) error {
 		return err
 	}
 	return c.JSON(key)
-}
-
-func (h *KeyHandler) HandleGetAPIKey(c *fiber.Ctx) error {
-	var (
-		keyID = c.Params("keyID")
-	)
-	key, err := h.store.APIKey.GetAPIKeyByID(c.Context(), keyID)
-	if err != nil {
-		return err
-	}
-	return c.JSON(key)
-}
-
-func (h *KeyHandler) HandlePutAPIKey(c *fiber.Ctx) error {
-	var (
-		params types.UpdateAPIKeyParams
-		keyID  = c.Params("keyID")
-	)
-	if err := c.BodyParser(&params); err != nil {
-		fmt.Printf("%+v", params)
-		return ErrBadRequest()
-	}
-	params.Date = time.Now()
-	filter := db.Map{"_id": keyID}
-	if err := h.store.APIKey.UpdateAPIKey(c.Context(), filter, params); err != nil {
-		return err
-	}
-	return c.JSON(map[string]string{"updated": keyID})
-}
-
-func (h *KeyHandler) HandlePostAPIKey(c *fiber.Ctx) error {
-	var (
-		params types.CreateAPIKeyParams
-	)
-	if err := c.BodyParser(&params); err != nil {
-		return ErrBadRequest()
-	}
-	newKey, err := types.NewAPIKeyFromParams(params)
-	if err != nil {
-		return err
-	}
-	key, err := h.store.APIKey.InsertAPIKey(c.Context(), newKey)
-	if err != nil {
-		return err
-	}
-	return c.JSON(key)
-}
-
-func (h *KeyHandler) HandleDeleteAPIKey(c *fiber.Ctx) error {
-	var (
-		keyID = c.Params("keyID")
-	)
-	if err := h.store.APIKey.DeleteAPIKey(c.Context(), keyID); err != nil {
-		return err
-	}
-	return c.JSON(map[string]string{"deleted": keyID})
 }
 
 func MarshalED25519PrivateKey(key ed25519.PrivateKey) []byte {

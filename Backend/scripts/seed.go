@@ -46,12 +46,6 @@ type GitKeySeed struct {
 	Date       time.Time
 }
 
-type APIKeySeed struct {
-	Key      string
-	Platform types.APIPlatformType
-	Date     time.Time
-}
-
 var repositoryies = []RepositorySeed{
 	{
 		Name:     "QuantumVault",
@@ -670,29 +664,6 @@ var gitKeys = []GitKeySeed{
 	},
 }
 
-var apiKeys = []APIKeySeed{
-	{
-		Key:      "",
-		Platform: types.Colab,
-		Date:     time.Now(),
-	},
-	{
-		Key:      "35b997af-1644-4484-b456-f7dc1e1ebe3c",
-		Platform: types.Kaggle,
-		Date:     time.Now(),
-	},
-	{
-		Key:      "19f20913-8712-4e52-a0f5-e11e0ac678bd",
-		Platform: types.OpenAI,
-		Date:     time.Now(),
-	},
-	{
-		Key:      "5fae1c9b-5ee6-4835-8248-450ac0b7d5e9",
-		Platform: types.Perplexity,
-		Date:     time.Now(),
-	},
-}
-
 func main() {
 	if len(os.Args) != 2 {
 		fmt.Println("Usage: go run scripts/seed.go <admin_passwd>")
@@ -719,7 +690,6 @@ func main() {
 		File:         db.NewMongoFileStore(client),
 		Code:         db.NewMongoCodeStore(client),
 		GitKey:       db.NewMongoGitKeyStore(client),
-		APIKey:       db.NewMongoAPIKeyStore(client),
 		Subscription: db.NewMongoSubscriptionStore(client),
 	}
 
@@ -746,10 +716,6 @@ func main() {
 
 	for _, g := range gitKeys {
 		fixtures.AddGitKey(store, user.ID, g.PublicKey, g.PrivateKey, g.Platform, g.Date)
-	}
-
-	for _, a := range apiKeys {
-		fixtures.AddAPIKey(store, user.ID, a.Key, a.Platform, a.Date)
 	}
 
 	fmt.Printf("\nEmail: %s\nPassword: %s", user.Email, password)

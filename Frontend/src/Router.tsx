@@ -9,7 +9,6 @@ import Register from "@/Routes/Register";
 import Dashboard from "@/Routes/Dashboard";
 import Settings from "@/Routes/Settings";
 
-import ApiSection from "@/Components/Settings/ApiSection";
 import GitSection from "@/Components/Settings/GitSection";
 import ProfileSection from "@/Components/Settings/ProfileSection";
 import SubscriptionSection from "@/Components/Settings/SubscriptionSection";
@@ -73,10 +72,6 @@ const routes = createBrowserRouter([
           {
             path: "git",
             element: <GitSection />,
-          },
-          {
-            path: "api",
-            element: <ApiSection />,
           },
         ],
       },

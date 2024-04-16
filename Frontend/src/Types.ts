@@ -16,13 +16,6 @@ export enum GitPlatformType {
   Bitbucket = 3,
 }
 
-export enum ApiPlatformType {
-  Colab = 0,
-  Kaggle = 1,
-  GPT = 2,
-  Perplexity = 3,
-}
-
 export enum SubscriptionPlanType {
   Free = 0,
 }
@@ -84,13 +77,6 @@ export interface GitKey {
   date: Date;
 }
 
-export interface ApiKey {
-  id: string;
-  key: string | null;
-  platform: ApiPlatformType;
-  date: Date;
-}
-
 export interface Subscription {
   id: string;
   plan: SubscriptionPlanType;
@@ -128,24 +114,8 @@ export const GitPlatformToStr = (platform: GitPlatformType) => {
   }
 };
 
-export const ApiPlatformToStr = (platform: ApiPlatformType) => {
-  switch (platform) {
-    case ApiPlatformType.Colab:
-      return "Colab";
-    case ApiPlatformType.Kaggle:
-      return "Kaggle";
-    case ApiPlatformType.GPT:
-      return "GPT";
-    case ApiPlatformType.Perplexity:
-      return "Perplexity";
-    default:
-      return "Unknown";
-  }
-};
-
 export type Repositories = Repository[];
 export type Files = File[];
 export type Codes = Code[];
 export type ChatMessages = ChatMessage[];
 export type GitKeys = GitKey[];
-export type ApiKeys = ApiKey[];

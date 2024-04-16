@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 
 const (
 	gitKeyColl = "gitKey"
-	apiKeyColl = "apiKey"
 )
 
 type GitKeyStore interface {
@@ -152,136 +150,6 @@ func (s *MongoGitKeyStore) InsertEmptyGitKeys(ctx context.Context, userID primit
 		PrivateKey: "",
 		Platform:   types.GitPlatformType(types.Bitbucket),
 		Date:       time.Now(),
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type APIKeyStore interface {
-	InsertAPIKey(context.Context, *types.APIKey) (*types.APIKey, error)
-	UpdateAPIKey(context.Context, Map, types.UpdateAPIKeyParams) error
-	GetAPIKeyByID(context.Context, string) (*types.APIKey, error)
-	GetAPIKeysByUserID(context.Context, string) ([]*types.APIKey, error)
-	InsertEmptyAPIKeys(context.Context, primitive.ObjectID) error
-	DeleteAPIKey(context.Context, string) error
-}
-
-type MongoAPIKeyStore struct {
-	client *mongo.Client
-	coll   *mongo.Collection
-}
-
-func NewMongoAPIKeyStore(client *mongo.Client) *MongoAPIKeyStore {
-	dbName := os.Getenv(MongoDBNameEnvName)
-	return &MongoAPIKeyStore{
-		client: client,
-		coll:   client.Database(dbName).Collection(apiKeyColl),
-	}
-}
-
-func (s *MongoAPIKeyStore) InsertAPIKey(ctx context.Context, apiKey *types.APIKey) (*types.APIKey, error) {
-	resp, err := s.coll.InsertOne(ctx, apiKey)
-	if err != nil {
-		return nil, err
-	}
-	apiKey.ID = resp.InsertedID.(primitive.ObjectID)
-	return apiKey, nil
-}
-
-func (s *MongoAPIKeyStore) UpdateAPIKey(ctx context.Context, filter Map, params types.UpdateAPIKeyParams) error {
-	oid, err := primitive.ObjectIDFromHex(filter["_id"].(string))
-	if err != nil {
-		return err
-	}
-	filter["_id"] = oid
-	update := Map{"$set": params.ToBSON()}
-	_, err = s.coll.UpdateOne(ctx, filter, update)
-	if err != nil {
-		fmt.Println("5")
-		return err
-	}
-	return nil
-}
-
-func (s *MongoAPIKeyStore) GetAPIKeyByID(ctx context.Context, id string) (*types.APIKey, error) {
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return nil, err
-	}
-	filter := Map{"_id": oid}
-	var apiKey types.APIKey
-	if err = s.coll.FindOne(ctx, filter).Decode(&apiKey); err != nil {
-		return nil, err
-	}
-	return &apiKey, nil
-}
-
-func (s *MongoAPIKeyStore) GetAPIKeysByUserID(ctx context.Context, id string) ([]*types.APIKey, error) {
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return nil, err
-	}
-	filter := Map{"userID": oid}
-	resp, err := s.coll.Find(ctx, filter)
-	if err != nil {
-		return nil, err
-	}
-	var apiKeys []*types.APIKey
-	if err = resp.All(ctx, &apiKeys); err != nil {
-		return nil, err
-	}
-	return apiKeys, nil
-}
-
-func (s *MongoAPIKeyStore) DeleteAPIKey(ctx context.Context, id string) error {
-	oid, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return err
-	}
-	filter := Map{"_id": oid}
-	update := Map{"$set": types.UpdateAPIKeyParams{Key: "", Date: time.Now()}.ToBSON()}
-	_, err = s.coll.UpdateOne(ctx, filter, update)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *MongoAPIKeyStore) InsertEmptyAPIKeys(ctx context.Context, userID primitive.ObjectID) error {
-	_, err := s.coll.InsertOne(ctx, types.APIKey{
-		UserID:   userID,
-		Key:      "",
-		Platform: types.APIPlatformType(types.Colab),
-		Date:     time.Now(),
-	})
-	if err != nil {
-		return err
-	}
-	_, err = s.coll.InsertOne(ctx, types.APIKey{
-		UserID:   userID,
-		Key:      "",
-		Platform: types.APIPlatformType(types.Kaggle),
-		Date:     time.Now(),
-	})
-	if err != nil {
-		return err
-	}
-	_, err = s.coll.InsertOne(ctx, types.APIKey{
-		UserID:   userID,
-		Key:      "",
-		Platform: types.APIPlatformType(types.OpenAI),
-		Date:     time.Now(),
-	})
-	if err != nil {
-		return err
-	}
-	_, err = s.coll.InsertOne(ctx, types.APIKey{
-		UserID:   userID,
-		Key:      "",
-		Platform: types.APIPlatformType(types.Perplexity),
-		Date:     time.Now(),
 	})
 	if err != nil {
 		return err

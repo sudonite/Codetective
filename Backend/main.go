@@ -38,7 +38,6 @@ func main() {
 		repositoryStore   = db.NewMongoRepositoryStore(client)
 		messageStore      = db.NewMongoMessageStore(client)
 		gitKeyStore       = db.NewMongoGitKeyStore(client)
-		apiKeyStore       = db.NewMongoAPIKeyStore(client)
 		subscriptionStore = db.NewMongoSubscriptionStore(client)
 		sessionStore      = db.NewWebsocketSessionStore(sessions, codeStore, fileStore, repositoryStore, startCh, finishCh, mu)
 		store             = &db.Store{
@@ -48,7 +47,6 @@ func main() {
 			File:         fileStore,
 			Code:         codeStore,
 			GitKey:       gitKeyStore,
-			APIKey:       apiKeyStore,
 			Subscription: subscriptionStore,
 			Session:      sessionStore,
 		}
@@ -93,11 +91,6 @@ func main() {
 	apiv1.Put("/key/git/:keyID", keyHandler.HandlePutGitKey)
 	apiv1.Post("/key/git", keyHandler.HandlePostGitKey)
 	apiv1.Delete("/key/git/:keyID", keyHandler.HandleDeleteGitKey)
-
-	apiv1.Get("/key/api/:keyID", keyHandler.HandleGetAPIKey)
-	apiv1.Put("/key/api/:keyID", keyHandler.HandlePutAPIKey)
-	apiv1.Post("/key/api", keyHandler.HandlePostAPIKey)
-	apiv1.Delete("/key/api/:keyID", keyHandler.HandleDeleteAPIKey)
 
 	apiv1.Get("/messages/:fileID", messageHandler.HandleGetMessages)
 

@@ -56,36 +56,3 @@ type GitKey struct {
 	Platform   GitPlatformType    `bson:"platform" json:"platform"`
 	Date       time.Time          `bson:"date" json:"date"`
 }
-
-type CreateAPIKeyParams struct {
-	UserID   primitive.ObjectID `json:"userID"`
-	Key      string             `json:"key"`
-	Platform APIPlatformType    `json:"platform"`
-	Date     time.Time          `json:"date"`
-}
-
-type UpdateAPIKeyParams struct {
-	Key  string    `json:"key"`
-	Date time.Time `json:"date"`
-}
-
-func (p UpdateAPIKeyParams) ToBSON() bson.M {
-	return bson.M{"key": p.Key}
-}
-
-func NewAPIKeyFromParams(params CreateAPIKeyParams) (*APIKey, error) {
-	return &APIKey{
-		UserID:   params.UserID,
-		Key:      params.Key,
-		Platform: params.Platform,
-		Date:     params.Date,
-	}, nil
-}
-
-type APIKey struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	UserID   primitive.ObjectID `bson:"userID" json:"userID"`
-	Key      string             `bson:"key" json:"key"`
-	Platform APIPlatformType    `bson:"platform" json:"platform"`
-	Date     time.Time          `bson:"date" json:"date"`
-}

@@ -37,15 +37,10 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-	apiKeys, err := h.store.APIKey.GetAPIKeysByUserID(c.Context(), user.ID.Hex())
-	if err != nil {
-		return err
-	}
 	result := map[string]interface{}{
 		"user":         user,
 		"subscription": subscription,
 		"gitKeys":      gitKeys,
-		"apiKeys":      apiKeys,
 	}
 	return c.JSON(result)
 }
@@ -95,9 +90,6 @@ func (h *UserHandler) HandlePostUser(c *fiber.Ctx) error {
 	}
 	insertedUser, err := h.store.User.InsertUser(c.Context(), user)
 	if err != nil {
-		return err
-	}
-	if err := h.store.APIKey.InsertEmptyAPIKeys(c.Context(), insertedUser.ID); err != nil {
 		return err
 	}
 	if err := h.store.GitKey.InsertEmptyGitKeys(c.Context(), insertedUser.ID); err != nil {

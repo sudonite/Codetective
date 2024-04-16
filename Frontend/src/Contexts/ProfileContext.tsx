@@ -1,11 +1,10 @@
 import { createContext, useState, useContext } from "react";
-import { ApiKeys, GitKeys, User, Subscription } from "@/Types";
+import { GitKeys, User, Subscription } from "@/Types";
 
 export interface UserProfile {
   user: User;
   subscription: Subscription;
   gitKeys: GitKeys;
-  apiKeys: ApiKeys;
 }
 
 interface ProfileContextType {

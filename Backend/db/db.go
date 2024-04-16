@@ -11,7 +11,6 @@ type Store struct {
 	File         FileStore
 	Code         CodeStore
 	GitKey       GitKeyStore
-	APIKey       APIKeyStore
 	Subscription SubscriptionStore
 	Session      SessionStore
 }
