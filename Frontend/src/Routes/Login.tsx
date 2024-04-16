@@ -18,15 +18,16 @@ const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [month, setMonth] = useState(false);
 
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const monthRef = useRef<HTMLButtonElement>(null);
 
   const handleLogin = async () => {
     const data = {
       email: emailRef.current?.value,
       password: passwordRef.current?.value,
+      month,
     };
     setLoading(true);
     const response = await LoginAPI(data);
@@ -84,7 +85,12 @@ const Login = () => {
             disabled={loading}
           />
           <div className="self-start flex items-center gap-x-2">
-            <Checkbox id="terms" ref={monthRef} disabled={loading} />
+            <Checkbox
+              id="terms"
+              checked={month}
+              onCheckedChange={() => setMonth(!month)}
+              disabled={loading}
+            />
             <label
               htmlFor="terms"
               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"

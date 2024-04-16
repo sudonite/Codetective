@@ -3,12 +3,15 @@ import { jwtDecode } from "jwt-decode";
 import { API } from "@/Consts";
 import { StatusType } from "@/Types";
 
-function createAxiosInstance(jwtToken: string | null) {
+const JWT_TOKEN_KEY = "jwtToken";
+
+const createAxiosInstance = (jwtToken: string | null) => {
   const instance = axios.create({
     baseURL: API,
+    timeout: 5000,
   });
 
-  instance.interceptors.request.use(async function (config) {
+  instance.interceptors.request.use(async config => {
     if (config?.data instanceof FormData) {
       Object.assign(config?.headers, { "Content-Type": "multipart/form-data" });
     }
@@ -17,10 +20,10 @@ function createAxiosInstance(jwtToken: string | null) {
       if (decodedToken && decodedToken?.exp) {
         const expired = decodedToken.exp < new Date().getTime() / 1000;
         if (expired) {
-          localStorage.removeItem("jwtToken");
+          localStorage.removeItem(JWT_TOKEN_KEY);
           delete instance.defaults.headers.common["Authorization"];
+          window.location.href = "/auth/login";
         } else {
-          console.log(decodedToken);
           config.headers.Authorization = `Bearer ${jwtToken}`;
         }
       }
@@ -28,21 +31,39 @@ function createAxiosInstance(jwtToken: string | null) {
     return config;
   });
 
+  instance.interceptors.response.use(
+    response => {
+      return response;
+    },
+    error => {
+      if (error?.response?.status === 401) {
+        localStorage.removeItem(JWT_TOKEN_KEY);
+        delete instance.defaults.headers.common["Authorization"];
+        window.location.href = "/auth/login";
+      }
+      return Promise.reject(error);
+    }
+  );
+
   return instance;
-}
+};
 
 let instance = createAxiosInstance(localStorage.getItem("jwtToken"));
 
 export const LoginAPI = async (data: any) => {
   try {
     const response = await instance.post("/auth/login", data);
-    localStorage.setItem("jwtToken", response?.data?.token);
+    localStorage.setItem(JWT_TOKEN_KEY, response?.data?.token);
     instance = createAxiosInstance(response?.data?.token);
-    console.log(instance);
     return { status: response.status };
   } catch (error: any) {
     return { status: error?.response?.status };
   }
+};
+
+export const LogoutAPI = async () => {
+  localStorage.removeItem(JWT_TOKEN_KEY);
+  instance = createAxiosInstance(null);
 };
 
 export const RegisterAPI = async (data: any) => {
@@ -84,7 +105,6 @@ export const GetProfileAPI = async () => {
 export const GetRepositoriesAPI = async () => {
   try {
     const response = await instance.get("/repositories");
-    console.log(response);
     return { data: response?.data, status: response.status };
   } catch (error: any) {
     return { status: error?.response?.status };

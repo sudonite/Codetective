@@ -37,6 +37,7 @@ import {
 } from "@/Components/UI/ContextMenu";
 
 import { cn } from "@/Utils";
+import { LogoutAPI } from "@/API";
 import { Repositories, Repository, StatusType } from "@/Types";
 
 import ThemeChanger from "@/Components/Theme/ThemeChanger";
@@ -73,7 +74,7 @@ const RepositoryArea = ({
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("jwtToken");
+    LogoutAPI();
     navigate("/");
   };
 

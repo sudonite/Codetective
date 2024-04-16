@@ -27,6 +27,7 @@ func NewAuthHandler(userStore db.UserStore) *AuthHandler {
 type AuthParams struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Month    bool   `json:"month"`
 }
 
 type AuthResponse struct {
@@ -60,13 +61,18 @@ func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 	if !types.IsValidPasssword(user.EncryptedPassword, params.Password) {
 		return invalidCredentials(c)
 	}
-	resp := AuthResponse{Token: CreateTokenFromUser(user)}
+	resp := AuthResponse{Token: CreateTokenFromUser(user, params.Month)}
 	return c.JSON(resp)
 }
 
-func CreateTokenFromUser(user *types.User) string {
+func CreateTokenFromUser(user *types.User, month bool) string {
 	now := time.Now()
-	expires := now.Add(time.Hour * 4).Unix()
+	expires := now.Add(time.Hour * 24).Unix()
+
+	if month {
+		expires = now.Add(time.Hour * 24 * 30).Unix()
+	}
+
 	claims := jwt.MapClaims{
 		"id":    user.ID,
 		"email": user.Email,
