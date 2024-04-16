@@ -1,4 +1,4 @@
-import { FaCopy, FaTrash } from "react-icons/fa";
+import { FaCopy, FaTrash, FaQuestionCircle } from "react-icons/fa";
 import { FaArrowsRotate, FaArrowRotateLeft } from "react-icons/fa6";
 import { SiGithub, SiGitlab, SiGitea, SiBitbucket } from "react-icons/si";
 
@@ -7,8 +7,8 @@ import { Input } from "@/Components/UI/Input";
 import { Button } from "@/Components/UI/Button";
 
 import { GitKey, GitPlatformToStr, GitPlatformType } from "@/Types";
+import { helpLinks } from "@/Consts";
 
-import GitCardHelp from "@/Components/Settings/GitCardHelp";
 import { useToast } from "@/Components/UI/useToast";
 import { useProfile, UserProfile } from "@/Contexts/ProfileContext";
 import { GenerateGitKeyAPI, DeleteGitKeyAPI } from "@/API";
@@ -90,6 +90,25 @@ const GitCard = ({ gitKey }: { gitKey: GitKey }) => {
     }
   };
 
+  const handleHelp = (platform: GitPlatformType) => {
+    let url = "";
+    switch (platform) {
+      case GitPlatformType.Github:
+        url = helpLinks.github;
+        break;
+      case GitPlatformType.Gitlab:
+        url = helpLinks.gitlab;
+        break;
+      case GitPlatformType.Gitea:
+        url = helpLinks.gitea;
+        break;
+      case GitPlatformType.Bitbucket:
+        url = helpLinks.bitbucket;
+        break;
+    }
+    window.open(url, "_blank");
+  };
+
   return (
     <div className="flex flex-col rounded-lg border p-4 space-y-4">
       <div className="flex flex-row justify-between">
@@ -129,7 +148,13 @@ const GitCard = ({ gitKey }: { gitKey: GitKey }) => {
               <FaTrash className="w-4 h-4 mr-2" />
               Delete
             </Button>
-            <GitCardHelp platform={gitKey?.platform} />
+            <Button
+              variant="outline"
+              onClick={() => handleHelp(gitKey?.platform)}
+            >
+              <FaQuestionCircle className="w-4 h-4 mr-2" />
+              Help
+            </Button>
           </>
         ) : (
           <Button variant="outline" onClick={() => handleGenerate(gitKey?.id)}>
