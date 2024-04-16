@@ -91,6 +91,15 @@ export const GetRepositoriesAPI = async () => {
   }
 };
 
+export const DeleteRepositoryAPI = async (repositoryId: string) => {
+  try {
+    const response = await instance.delete(`/repository/${repositoryId}`);
+    return { status: response.status };
+  } catch (error: any) {
+    return { status: error?.response?.status };
+  }
+};
+
 export const GetFilesAPI = async (repositoryId: string) => {
   try {
     const response = await instance.get(`/files/${repositoryId}`);

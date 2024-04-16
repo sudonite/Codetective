@@ -17,6 +17,7 @@ type RepositoryStore interface {
 	UpdateRepository(context.Context, Map, types.UpdateRepositoryParams) error
 	GetRepositories(context.Context, string) ([]*types.Repository, error)
 	GetRepositoryByID(context.Context, string) (*types.Repository, error)
+	DeleteRepositoryByID(context.Context, string) error
 }
 
 type MongoRepositoryStore struct {
@@ -82,4 +83,16 @@ func (s *MongoRepositoryStore) GetRepositoryByID(ctx context.Context, id string)
 		return nil, err
 	}
 	return &repository, nil
+}
+
+func (s *MongoRepositoryStore) DeleteRepositoryByID(ctx context.Context, id string) error {
+	oid, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return err
+	}
+	_, err = s.coll.DeleteOne(ctx, bson.M{"_id": oid})
+	if err != nil {
+		return err
+	}
+	return nil
 }

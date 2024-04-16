@@ -73,6 +73,8 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 
 	go h.MessageReader(c, session, user)
 
+	// @TODO: Send the initial repository and store in frontend
+
 	for running {
 		switch session.Status {
 		case types.Queue:
@@ -96,6 +98,7 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 
 		time.Sleep(websocketWriteDelay)
 	}
+	// @TODO: Send the final repository and modify status in frontend
 }
 
 func (h *SessionHandler) ConnectModel(session *types.Session) {

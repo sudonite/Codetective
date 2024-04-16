@@ -81,6 +81,7 @@ func main() {
 	apiv1.Delete("/user", userHandler.HandleDeleteUser)
 
 	apiv1.Get("/repositories", repositoryHandler.HandleGetRepositories)
+	apiv1.Delete("/repository/:id", repositoryHandler.HandleDeleteRepository)
 
 	apiv1.Get("/files/:repoID", fileHandler.HandleGetFiles)
 

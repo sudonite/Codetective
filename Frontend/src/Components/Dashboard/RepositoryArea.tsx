@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { Tabs, TabsList, TabsTrigger } from "@/Components/UI/Tabs";
+import { MdLogout } from "react-icons/md";
+import { IoMdSettings } from "react-icons/io";
+import { FaPalette } from "react-icons/fa6";
 
 import { Button } from "@/Components/UI/Button";
 import { ScrollArea } from "@/Components/UI/ScrollArea";
+import { Tabs, TabsList, TabsTrigger } from "@/Components/UI/Tabs";
 import {
   Card,
   CardHeader,
@@ -26,36 +29,59 @@ import {
   DropdownMenuTrigger,
 } from "@/Components/UI/DropdownMenu";
 
-import RepositoryIcon from "@/Components/Dashboard/RepositoryIcon";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/Components/UI/ContextMenu";
 
 import { cn } from "@/Utils";
 import { Repositories, Repository, StatusType } from "@/Types";
+
 import ThemeChanger from "@/Components/Theme/ThemeChanger";
 import AnalyzeDrawer from "@/Components/Dashboard/Analyze/AnalyzeDrawer";
-
-import { MdLogout } from "react-icons/md";
-import { IoMdSettings } from "react-icons/io";
-import { FaPalette } from "react-icons/fa6";
+import RepositoryIcon from "@/Components/Dashboard/RepositoryIcon";
 import StatusBadge from "@/Components/Dashboard/StatusBadge";
+import DeleteDialog from "@/Components/Dashboard/RepositoryDelete";
 
 interface RepositoryAreaProps {
   repositories: Repositories;
   selectedRepository: Repository | null;
   onClick: (repository: Repository) => void;
+  onDelete: (repository: Repository) => void;
 }
 
 const RepositoryArea = ({
   repositories,
   selectedRepository,
   onClick,
+  onDelete,
 }: RepositoryAreaProps) => {
   const navigate = useNavigate();
   const [filteredRepository, setFilteredRepository] = useState<string>("all");
   const [filteredCategory, setFilteredCategory] = useState<string>("all");
-  console.log(repositories);
+
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false);
+  const [deleteRepository, setDeleteRepository] = useState<Repository | null>(
+    null
+  );
+
+  const handleDialogClose = () => {
+    setDeleteDialogOpen(false);
+    setDeleteRepository(null);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("jwtToken");
     navigate("/");
+  };
+
+  const handleDelete = () => {
+    if (deleteRepository) {
+      onDelete(deleteRepository);
+      handleDialogClose();
+    }
   };
 
   return (
@@ -110,31 +136,46 @@ const RepositoryArea = ({
                   new Date(b.date).getTime() - new Date(a.date).getTime()
               )
               .map(repository => (
-                <Card
-                  key={repository.id}
-                  className={cn(
-                    "m-4 hover:cursor-pointer border rounded-lg",
-                    repository.id === selectedRepository?.id
-                      ? "bg-primary/50 hover:bg-primary/50 border-primary"
-                      : "bg-background hover:bg-accent"
-                  )}
-                  onClick={() => onClick(repository)}
-                >
-                  <CardHeader className="space-y-1 flex flex-row justify-start items-start gap-4">
-                    <div className="mt-1 bg-primary/20 rounded-lg p-2">
-                      <RepositoryIcon platform={repository.platform} />
-                    </div>
-                    <div className="grow">
-                      <CardTitle>{repository.name}</CardTitle>
-                      <CardDescription className="text-md mt-2 w-full">
-                        {new Date(repository.date).toDateString()}
-                      </CardDescription>
-                    </div>
-                    <div>
-                      <StatusBadge status={repository.status} />
-                    </div>
-                  </CardHeader>
-                </Card>
+                <ContextMenu>
+                  <ContextMenuTrigger>
+                    <Card
+                      key={repository.id}
+                      className={cn(
+                        "m-4 hover:cursor-pointer border rounded-lg",
+                        repository.id === selectedRepository?.id
+                          ? "bg-primary/50 hover:bg-primary/50 border-primary"
+                          : "bg-background hover:bg-accent"
+                      )}
+                      onClick={() => onClick(repository)}
+                    >
+                      <CardHeader className="space-y-1 flex flex-row justify-start items-start gap-4">
+                        <div className="mt-1 bg-primary/20 rounded-lg p-2">
+                          <RepositoryIcon platform={repository.platform} />
+                        </div>
+                        <div className="grow">
+                          <CardTitle>{repository.name}</CardTitle>
+                          <CardDescription className="text-md mt-2 w-full">
+                            {new Date(repository.date).toDateString()}
+                          </CardDescription>
+                        </div>
+                        <div>
+                          <StatusBadge status={repository.status} />
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent className="w-48">
+                    <ContextMenuItem
+                      inset
+                      onClick={() => {
+                        setDeleteRepository(repository);
+                        setDeleteDialogOpen(true);
+                      }}
+                    >
+                      Delete repository
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               ))}
           </ScrollArea>
         ) : (
@@ -168,6 +209,12 @@ const RepositoryArea = ({
           </Button>
         </div>
       </div>
+      <DeleteDialog
+        isOpen={deleteDialogOpen}
+        name={deleteRepository?.name ?? ""}
+        onClose={handleDialogClose}
+        onDelete={handleDelete}
+      />
     </div>
   );
 };

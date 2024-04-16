@@ -28,6 +28,7 @@ import {
   GetFilesAPI,
   GetCodesAPI,
   ChangeCodeStatusAPI,
+  DeleteRepositoryAPI,
 } from "@/API";
 import { useToast } from "@/Components/UI/useToast";
 
@@ -115,6 +116,34 @@ const Dashboard = () => {
     }
   };
 
+  const handleUnselect = () => {
+    setSelectedRepository(null);
+    setSelectedFile(null);
+    setSelectedCode(null);
+  };
+
+  const handleDeleteRepository = async (repository: Repository) => {
+    const response = await DeleteRepositoryAPI(repository.id);
+    if (response.status == 200) {
+      const newRepositories = repositories.filter(
+        item => item.id !== repository.id
+      );
+      setRepositories(newRepositories);
+      if (selectedRepository?.id === repository.id) {
+        handleUnselect();
+      }
+      toast({
+        title: "Success",
+        description: "Repository deleted",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "An error occurred",
+      });
+    }
+  };
+
   return (
     <div className="w-screen h-screen flex flex-col">
       <ResizablePanelGroup direction="horizontal" className="border rounded-lg">
@@ -123,6 +152,7 @@ const Dashboard = () => {
             repositories={repositories}
             selectedRepository={selectedRepository}
             onClick={handleSelectRepository}
+            onDelete={handleDeleteRepository}
           />
         </ResizablePanel>
         <ResizableHandle withHandle />
