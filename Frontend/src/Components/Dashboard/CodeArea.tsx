@@ -75,7 +75,7 @@ const CodeArea = ({
   };
   return (
     <div className="h-screen flex flex-col box-border">
-      <div className="h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b justify-between">
+      <div className="min-h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b justify-between">
         <div>
           {selectedCode && (
             <h1 className="text-center">
@@ -122,7 +122,7 @@ const CodeArea = ({
           </div>
         )}
       </div>
-      <div className="h-16 max-h-16 p-2 flex flex-row items-center border-t justify-between">
+      <div className="min-h-16 max-h-16 p-2 flex flex-row items-center border-t justify-between">
         {selectedCode && (
           <>
             <div className="flex items-center w-1/2">
