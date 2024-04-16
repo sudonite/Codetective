@@ -70,13 +70,13 @@ const RepositoryArea = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={"all"}>{"All repositories"}</SelectItem>
-            {[...new Set(repositories.map(item => item.name))].map(
-              (name, index) => (
+            {[...new Set(repositories.map(item => item.name))]
+              .sort((a: any, b: any) => a.localeCompare(b))
+              .map((name, index) => (
                 <SelectItem key={index} value={name}>
                   {name}
                 </SelectItem>
-              )
-            )}
+              ))}
           </SelectContent>
         </Select>
         <Tabs

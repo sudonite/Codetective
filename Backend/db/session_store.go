@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -57,7 +58,7 @@ type SessionStore interface {
 }
 
 type WebsocketSessionStore struct {
-	sessions  *types.Sessions // @TODO: Use Pointer
+	sessions  *types.Sessions
 	codeStore *MongoCodeStore
 	fileStore *MongoFileStore
 	repoStore *MongoRepositoryStore
@@ -231,8 +232,7 @@ func (s *WebsocketSessionStore) HandleQueue() {
 }
 
 func (s *WebsocketSessionStore) HandleModel(code string) bool {
-	//return rand.New(rand.NewSource(time.Now().UnixNano())).Intn(100) <= 2
-	return true
+	return rand.New(rand.NewSource(time.Now().UnixNano())).Intn(100) <= 2
 }
 
 func (s *WebsocketSessionStore) GetSession(user *types.User) *types.Session {
