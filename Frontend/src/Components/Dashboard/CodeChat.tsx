@@ -54,10 +54,7 @@ const CodeChat = ({
           </div>
         </DialogHeader>
         <div className="w-full h-full space-y-4">
-          <ScrollArea
-            className="h-96 border rounded-lg p-2"
-            onScroll={() => console.log("ASDASDASDA")}
-          >
+          <ScrollArea className="h-96 border rounded-lg p-2">
             <div className="space-y-2">
               {chatMessages.map(message => (
                 <div

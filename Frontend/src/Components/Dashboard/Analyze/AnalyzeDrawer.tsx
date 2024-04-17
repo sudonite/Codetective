@@ -44,9 +44,6 @@ const AnalyzeDrawer = ({ repositories, onChange }: AnalyzeDrawerProps) => {
     if (!token) return;
     const ws = new WebSocket(WS + "?token=" + token);
 
-    ws.onopen = () => console.log("Connected");
-    ws.onclose = () => console.log("Disconnected");
-    ws.onerror = error => console.log("Error: ", error);
     ws.onmessage = event => handleMessageReceive(event.data);
 
     connection.current = ws;

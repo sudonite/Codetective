@@ -47,10 +47,8 @@ const CodeDropdown = ({
   };
 
   const handleOpenInVSCode = () => {
-    console.log("in function");
     switch (repository?.platform) {
       case GitPlatformType.Github:
-        console.log("github");
         window.open(
           repository?.url
             .replace(new RegExp(".git$"), "")
@@ -59,7 +57,6 @@ const CodeDropdown = ({
         );
         break;
       case GitPlatformType.Gitlab:
-        console.log("gitlab");
         const parts = repository?.url
           .replace(new RegExp(".git$"), "")
           .split("/");
@@ -70,7 +67,6 @@ const CodeDropdown = ({
         );
         break;
       case GitPlatformType.Bitbucket:
-        console.log("bitbucket");
         break;
     }
   };

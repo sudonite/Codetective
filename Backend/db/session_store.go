@@ -94,19 +94,14 @@ func (s *WebsocketSessionStore) SessionCleaner() {
 
 		for _, v := range *s.sessions {
 			if time.Since(v.Modified) > maxSessionIdle && v.Status != types.Queue && v.Status != types.Scanning {
-				fmt.Printf("Deleting session: %#v\n", v)
 				s.DeleteSession(v)
 			} else {
 				scanDir = append(scanDir, v.Directory)
 			}
 		}
 
-		fmt.Printf("Scan dir: %#v\n", scanDir)
-
 		for _, fileInfo := range fileInfos {
-			fmt.Printf("File info: %#v\n", fileInfo.Name())
 			if fileInfo.IsDir() && !slices.Contains(scanDir, fileInfo.Name()) {
-				fmt.Println("Deleting folder: ", fileInfo.Name())
 				os.RemoveAll(filepath.Join(clonePath, fileInfo.Name()))
 			}
 		}
@@ -381,7 +376,6 @@ func (s *WebsocketSessionStore) CloneRepository(session *types.Session, user *ty
 
 	_, err := git.PlainClone(filepath.Join(clonePath, path), false, config)
 	if err != nil {
-		fmt.Println("Clone error:", err)
 		return err
 	}
 
@@ -400,7 +394,6 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Println("Error walking directory #1:", err)
 			return err
 		}
 		if !info.Mode().IsRegular() {
@@ -413,7 +406,6 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 		return nil
 	})
 	if err != nil {
-		fmt.Println("Error walking directory #2:", err)
 		return err
 	}
 
@@ -439,13 +431,11 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 		funcBytes = []types.FuncPostType{}
 		content, err := os.ReadFile(filepath.Join(clonePath, session.Directory, file))
 		if err != nil {
-			fmt.Println("Error reading file:", err)
 			return err
 		}
 
 		tree, err := parser.ParseCtx(context.Background(), nil, content)
 		if err != nil {
-			fmt.Println("Error parsing file:", err)
 			return err
 		}
 

@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"os"
 
 	"github.com/sudonite/Codetective/types"
@@ -41,7 +40,6 @@ func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
 }
 
 func (s *MongoUserStore) Drop(ctx context.Context) error {
-	fmt.Println("--- dropping user collection")
 	return s.coll.Drop(ctx)
 }
 

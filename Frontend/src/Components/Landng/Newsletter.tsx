@@ -4,7 +4,6 @@ import { Input } from "@/Components/UI/Input";
 const Newsletter = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Subscribed!");
   };
 
   return (
