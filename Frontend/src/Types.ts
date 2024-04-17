@@ -86,6 +86,7 @@ export interface Subscription {
 export interface Message {
   status: MessageStatusType;
   message: string;
+  repository: Repository;
 }
 
 export const subscriptionPlanToStr = (

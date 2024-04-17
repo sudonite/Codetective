@@ -120,6 +120,8 @@ const Dashboard = () => {
     setSelectedRepository(null);
     setSelectedFile(null);
     setSelectedCode(null);
+    setFiles([]);
+    setCodes([]);
   };
 
   const handleDeleteRepository = async (repository: Repository) => {
@@ -151,6 +153,7 @@ const Dashboard = () => {
           <RepositoryArea
             repositories={repositories}
             selectedRepository={selectedRepository}
+            onChange={setRepositories}
             onClick={handleSelectRepository}
             onDelete={handleDeleteRepository}
           />
@@ -168,6 +171,7 @@ const Dashboard = () => {
           <CodeArea
             file={selectedFile}
             codes={codes}
+            repository={selectedRepository}
             selectedCode={selectedCode}
             onCodeChange={handleSelectCode}
             onStatusChange={handleStatusChange}

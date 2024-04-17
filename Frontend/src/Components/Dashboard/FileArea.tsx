@@ -23,7 +23,7 @@ const FileArea = ({ files, selectedFile, onClick }: FileAreaProps) => {
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b relative">
+      <div className="min-h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b relative">
         <FaSearch className="absolute left-4 top-6 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search file"
@@ -72,7 +72,7 @@ const FileArea = ({ files, selectedFile, onClick }: FileAreaProps) => {
           </div>
         )}
       </div>
-      <div className="h-16 max-h-16 p-2 flex flex-row items-center justify-between border-t"></div>
+      <div className="min-h-16 max-h-16 p-2 flex flex-row items-center justify-between border-t"></div>
     </div>
   );
 };

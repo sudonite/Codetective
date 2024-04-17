@@ -8,6 +8,7 @@ import {
   Code,
   ChatMessages,
   ChatMessage,
+  Repository,
 } from "@/Types";
 import { codeTheme, welcomeMessage } from "@/Consts";
 import { receiveAnswer } from "@/fakeAPI";
@@ -22,6 +23,7 @@ import CodeChat from "@/Components/Dashboard/CodeChat";
 interface CodeAreaProps {
   codes: Codes;
   file: File | null;
+  repository: Repository | null;
   selectedCode: Code | null;
   onCodeChange: (code: Code) => void;
   onStatusChange: (status: StatusType) => void;
@@ -30,6 +32,7 @@ interface CodeAreaProps {
 const CodeArea = ({
   codes,
   file,
+  repository,
   selectedCode,
   onCodeChange,
   onStatusChange,
@@ -73,6 +76,7 @@ const CodeArea = ({
       setChatMessages([...chatMessages, newMessage, response?.data]);
     }
   };
+
   return (
     <div className="h-screen flex flex-col box-border">
       <div className="min-h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b justify-between">
@@ -88,6 +92,7 @@ const CodeArea = ({
           )}
         </div>
         <CodeDropdown
+          repository={repository}
           selectedCode={selectedCode}
           wordWrap={wordWrap}
           lineNumbers={lineNumbers}

@@ -8,9 +8,20 @@ import Server from "@/Components/Dashboard/Analyze/Server";
 import Queue from "@/Components/Dashboard/Analyze/Queue";
 import Model from "@/Components/Dashboard/Analyze/Model";
 import Analyze from "@/Components/Dashboard/Analyze/Analyze";
-import { GitPlatformType, Message, MessageStatusType } from "@/Types";
+import {
+  GitPlatformType,
+  Message,
+  MessageStatusType,
+  Repositories,
+  Repository,
+} from "@/Types";
 
-const AnalyzeDrawer = () => {
+interface AnalyzeDrawerProps {
+  repositories: Repositories;
+  onChange: (repositories: Repositories) => void;
+}
+
+const AnalyzeDrawer = ({ repositories, onChange }: AnalyzeDrawerProps) => {
   const connection = useRef<WebSocket | null>(null);
 
   const [drawerOpen, setDrawerOpen] = useState<boolean>(false);
@@ -58,6 +69,22 @@ const AnalyzeDrawer = () => {
   };
   const handleError = () => setScanError(true);
 
+  const handleAddRepository = (repo: Repository) => {
+    if (repo.name !== "") {
+      const exist = repositories.find(r => r.id === repo.id);
+      if (exist) {
+        if (exist.status !== repo.status) {
+          const newRepositories = repositories.map(r =>
+            r.id === repo.id ? repo : r
+          );
+          onChange(newRepositories);
+        }
+      } else {
+        onChange([repo, ...repositories]);
+      }
+    }
+  };
+
   const handleMessageReceive = (data: string) => {
     const msg: Message = JSON.parse(data);
     switch (msg.status) {
@@ -81,12 +108,14 @@ const AnalyzeDrawer = () => {
         handleModelConnected();
         handleScanStarted();
         handleScanProgress(msg.message);
+        handleAddRepository(msg.repository);
         break;
       case MessageStatusType.Finished:
         handleServerConnected();
         handleQueueFinished();
         handleModelConnected();
         handleScanFinished();
+        handleAddRepository(msg.repository);
         break;
       case MessageStatusType.Error:
         handleServerConnected();

@@ -60,6 +60,7 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 		msg     types.SessionMessage
 		err     error
 		running = true
+		sent    = false
 	)
 	defer c.Close()
 
@@ -73,18 +74,26 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 
 	go h.MessageReader(c, session, user)
 
-	// @TODO: Send the initial repository and store in frontend
-
 	for running {
 		switch session.Status {
 		case types.Queue:
 			h.UpdateQueue(session)
+		case types.Finished:
+			sent = false
 		}
 
 		msg = types.SessionMessage{
 			Status:  session.Status,
 			Message: session.Message,
 		}
+
+		if !sent && (session.Status == types.Scanning || session.Status == types.Finished) {
+			repo, err := h.store.Repository.GetRepositoryByID(context.Background(), session.RepositoryID.Hex())
+			if err == nil {
+				msg.Repository = *repo
+			}
+		}
+
 		if err = c.WriteJSON(msg); err != nil {
 			break
 		}
@@ -98,7 +107,6 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 
 		time.Sleep(websocketWriteDelay)
 	}
-	// @TODO: Send the final repository and modify status in frontend
 }
 
 func (h *SessionHandler) ConnectModel(session *types.Session) {
@@ -135,6 +143,7 @@ func (h *SessionHandler) PrepareRepository(session *types.Session, user *types.U
 		return fmt.Errorf("error getting functions from repository")
 	}
 
+	h.store.Session.ChangePlatform(session, msg.Platform)
 	h.store.Session.TouchDate(session)
 	h.store.Session.ProcessStarter(session)
 
@@ -155,6 +164,7 @@ func (h *SessionHandler) MessageReader(c *websocket.Conn, session *types.Session
 		switch msg.Action {
 		case "start":
 			if session.Status == types.WaitingForClient {
+				h.store.Session.ChangeStatus(session, types.Scanning)
 				if err := h.PrepareRepository(session, user, msg); err != nil {
 					h.store.Session.ChangeStatus(session, types.Error)
 					h.store.Session.ChangeMessage(session, err.Error())

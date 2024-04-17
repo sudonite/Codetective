@@ -49,6 +49,7 @@ import DeleteDialog from "@/Components/Dashboard/RepositoryDelete";
 interface RepositoryAreaProps {
   repositories: Repositories;
   selectedRepository: Repository | null;
+  onChange: (repositories: Repositories) => void;
   onClick: (repository: Repository) => void;
   onDelete: (repository: Repository) => void;
 }
@@ -56,6 +57,7 @@ interface RepositoryAreaProps {
 const RepositoryArea = ({
   repositories,
   selectedRepository,
+  onChange,
   onClick,
   onDelete,
 }: RepositoryAreaProps) => {
@@ -87,7 +89,7 @@ const RepositoryArea = ({
 
   return (
     <div className="h-screen flex flex-col">
-      <div className="h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b">
+      <div className="min-h-16 max-h-16 p-2 flex flex-row gap-x-2 items-center border-b">
         <Select
           defaultValue={filteredRepository}
           onValueChange={e => setFilteredRepository(e)}
@@ -172,6 +174,7 @@ const RepositoryArea = ({
                         setDeleteRepository(repository);
                         setDeleteDialogOpen(true);
                       }}
+                      disabled={repository.status === StatusType.Running}
                     >
                       Delete repository
                     </ContextMenuItem>
@@ -187,8 +190,8 @@ const RepositoryArea = ({
           </div>
         )}
       </div>
-      <div className="h-16 max-h-16 p-2 flex flex-row items-center justify-between border-t">
-        <AnalyzeDrawer />
+      <div className="min-h-16 max-h-16 p-2 flex flex-row items-center justify-between border-t">
+        <AnalyzeDrawer repositories={repositories} onChange={onChange} />
         <div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

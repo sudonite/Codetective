@@ -19,9 +19,10 @@ import {
 import { Button } from "@/Components/UI/Button";
 
 import StatusBadge from "@/Components/Dashboard/StatusBadge";
-import { Code, StatusType } from "@/Types";
+import { Code, GitPlatformType, Repository, StatusType } from "@/Types";
 
 interface CodeDropdownProps {
+  repository: Repository | null;
   selectedCode: Code | null;
   wordWrap: boolean;
   lineNumbers: boolean;
@@ -31,6 +32,7 @@ interface CodeDropdownProps {
 }
 
 const CodeDropdown = ({
+  repository,
   selectedCode,
   onStatusChange,
   wordWrap,
@@ -38,6 +40,41 @@ const CodeDropdown = ({
   setWordWrap,
   setLineNumbers,
 }: CodeDropdownProps) => {
+  const handleOpenRepository = () => {
+    if (repository?.url) {
+      window.open(repository.url.replace(new RegExp(".git$"), ""), "_blank");
+    }
+  };
+
+  const handleOpenInVSCode = () => {
+    console.log("in function");
+    switch (repository?.platform) {
+      case GitPlatformType.Github:
+        console.log("github");
+        window.open(
+          repository?.url
+            .replace(new RegExp(".git$"), "")
+            .replace("github.com", "github.dev"),
+          "_blank"
+        );
+        break;
+      case GitPlatformType.Gitlab:
+        console.log("gitlab");
+        const parts = repository?.url
+          .replace(new RegExp(".git$"), "")
+          .split("/");
+        const path = parts.slice(3).join("/");
+        window.open(
+          `https://gitlab.com/-/ide/project/${path}/edit/master/-`,
+          "_blank"
+        );
+        break;
+      case GitPlatformType.Bitbucket:
+        console.log("bitbucket");
+        break;
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger disabled={!selectedCode}>
@@ -56,11 +93,21 @@ const CodeDropdown = ({
         <DropdownMenuLabel>Options</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem disabled>
+          <DropdownMenuItem
+            onClick={handleOpenRepository}
+            disabled={!repository?.url.startsWith("http")}
+          >
             <FaGit className="mr-2 h-4 w-4" />
             Open repository
           </DropdownMenuItem>
-          <DropdownMenuItem disabled>
+          <DropdownMenuItem
+            onClick={handleOpenInVSCode}
+            disabled={
+              !repository?.url.startsWith("http") ||
+              (repository.platform !== GitPlatformType.Github &&
+                repository.platform !== GitPlatformType.Gitlab)
+            }
+          >
             <TbBrandVscode className="mr-2 h-4 w-4" />
             Open in VSCode
           </DropdownMenuItem>

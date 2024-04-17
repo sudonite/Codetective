@@ -51,6 +51,7 @@ type SessionStore interface {
 	ChangeName(*types.Session, string)
 	ChangePlatform(*types.Session, types.GitPlatformType)
 	ChangeDirectory(*types.Session, string)
+	ChangeURL(*types.Session, string)
 	CloneRepository(*types.Session, *types.User, *types.GitKey, string, bool) error
 	GetFunctionsFromRepository(*types.Session) error
 	GetCodeFromFile([]byte, *types.FuncPostType) (string, int)
@@ -93,14 +94,19 @@ func (s *WebsocketSessionStore) SessionCleaner() {
 
 		for _, v := range *s.sessions {
 			if time.Since(v.Modified) > maxSessionIdle && v.Status != types.Queue && v.Status != types.Scanning {
+				fmt.Printf("Deleting session: %#v\n", v)
 				s.DeleteSession(v)
 			} else {
 				scanDir = append(scanDir, v.Directory)
 			}
 		}
 
+		fmt.Printf("Scan dir: %#v\n", scanDir)
+
 		for _, fileInfo := range fileInfos {
+			fmt.Printf("File info: %#v\n", fileInfo.Name())
 			if fileInfo.IsDir() && !slices.Contains(scanDir, fileInfo.Name()) {
+				fmt.Println("Deleting folder: ", fileInfo.Name())
 				os.RemoveAll(filepath.Join(clonePath, fileInfo.Name()))
 			}
 		}
@@ -125,11 +131,11 @@ func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
 		Date:     time.Now(),
 	})
 
+	s.ChangeRepositoryID(session, repository.ID)
+
 	actual := 1
 	vulnRepo := false
 	availableFunctions := s.CountFunctions(session)
-
-	s.ChangeStatus(session, types.Scanning)
 
 	for _, file := range session.Files {
 		for _, function := range file.FuncPos {
@@ -181,7 +187,7 @@ func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
 	if vulnRepo {
 		repoParams = types.UpdateRepositoryParams{Status: types.Vulnerable}
 	} else {
-		repoParams = types.UpdateRepositoryParams{Status: types.Vulnerable}
+		repoParams = types.UpdateRepositoryParams{Status: types.Clean}
 	}
 
 	s.repoStore.UpdateRepository(context.Background(), repoFilter, repoParams)
@@ -324,6 +330,18 @@ func (s *WebsocketSessionStore) ChangeDirectory(session *types.Session, dir stri
 	s.mu.Unlock()
 }
 
+func (s *WebsocketSessionStore) ChangeRepositoryID(session *types.Session, id primitive.ObjectID) {
+	s.mu.Lock()
+	session.RepositoryID = id
+	s.mu.Unlock()
+}
+
+func (s *WebsocketSessionStore) ChangeURL(session *types.Session, url string) {
+	s.mu.Lock()
+	session.URL = url
+	s.mu.Unlock()
+}
+
 func (s *WebsocketSessionStore) CloneRepository(session *types.Session, user *types.User, key *types.GitKey, link string, priv bool) error {
 	var (
 		repoName = "Unknown"
@@ -335,7 +353,17 @@ func (s *WebsocketSessionStore) CloneRepository(session *types.Session, user *ty
 		repoName = strings.ToUpper(string(match[2][0])) + match[2][1:]
 	}
 
+	re = regexp.MustCompile(`^git@(.*?):(.*?)(?:\.git)?$`)
+	match = re.FindStringSubmatch(link)
+	if len(match) >= 3 && !priv {
+		hostingPlatform := match[1]
+		repoPath := match[2]
+		link = fmt.Sprintf("https://%s/%s", hostingPlatform, repoPath)
+	}
+
 	path := strings.ReplaceAll(uuid.New().String(), "-", "")
+	s.ChangeDirectory(session, path)
+
 	config := &git.CloneOptions{
 		URL:      link,
 		Progress: nil,
@@ -350,14 +378,16 @@ func (s *WebsocketSessionStore) CloneRepository(session *types.Session, user *ty
 		publicKey.HostKeyCallback = sshcrypto.InsecureIgnoreHostKey()
 		config.Auth = publicKey
 	}
+
 	_, err := git.PlainClone(filepath.Join(clonePath, path), false, config)
 	if err != nil {
+		fmt.Println("Clone error:", err)
 		return err
 	}
 
 	s.ChangeName(session, repoName)
-	s.ChangeDirectory(session, path)
 	s.ChangePlatform(session, session.Platform)
+	s.ChangeURL(session, link)
 
 	return nil
 }
@@ -370,6 +400,7 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
+			fmt.Println("Error walking directory #1:", err)
 			return err
 		}
 		if !info.Mode().IsRegular() {
@@ -382,6 +413,7 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 		return nil
 	})
 	if err != nil {
+		fmt.Println("Error walking directory #2:", err)
 		return err
 	}
 
@@ -407,11 +439,13 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 		funcBytes = []types.FuncPostType{}
 		content, err := os.ReadFile(filepath.Join(clonePath, session.Directory, file))
 		if err != nil {
+			fmt.Println("Error reading file:", err)
 			return err
 		}
 
 		tree, err := parser.ParseCtx(context.Background(), nil, content)
 		if err != nil {
+			fmt.Println("Error parsing file:", err)
 			return err
 		}
 
