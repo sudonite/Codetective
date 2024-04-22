@@ -1,5 +1,3 @@
-export type Sender = "user" | "bot";
-
 export enum StatusType {
   Clean = 0,
   Vulnerable = 1,
@@ -63,13 +61,6 @@ export interface Code {
   date: Date;
 }
 
-export interface ChatMessage {
-  id: string;
-  message: string;
-  sender: Sender;
-  date: Date;
-}
-
 export interface GitKey {
   id: string;
   key: string | null;
@@ -118,5 +109,4 @@ export const GitPlatformToStr = (platform: GitPlatformType) => {
 export type Repositories = Repository[];
 export type Files = File[];
 export type Codes = Code[];
-export type ChatMessages = ChatMessage[];
 export type GitKeys = GitKey[];

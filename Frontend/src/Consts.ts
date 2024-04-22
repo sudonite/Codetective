@@ -1,5 +1,3 @@
-import { ChatMessage } from "@/Types";
-
 export const domain =
   document.domain === "localhost"
     ? "http://localhost:8000"
@@ -331,11 +329,4 @@ export const codeTheme = {
   italic: {
     fontStyle: "italic",
   },
-};
-
-export const welcomeMessage: ChatMessage = {
-  id: "0",
-  message: "Hi, how can I help you today?",
-  sender: "bot",
-  date: new Date(),
 };

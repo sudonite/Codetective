@@ -36,14 +36,12 @@ func main() {
 		codeStore         = db.NewMongoCodeStore(client)
 		fileStore         = db.NewMongoFileStore(client)
 		repositoryStore   = db.NewMongoRepositoryStore(client)
-		messageStore      = db.NewMongoMessageStore(client)
 		gitKeyStore       = db.NewMongoGitKeyStore(client)
 		subscriptionStore = db.NewMongoSubscriptionStore(client)
 		sessionStore      = db.NewWebsocketSessionStore(sessions, codeStore, fileStore, repositoryStore, startCh, finishCh, mu)
 		store             = &db.Store{
 			User:         userStore,
 			Repository:   repositoryStore,
-			Message:      messageStore,
 			File:         fileStore,
 			Code:         codeStore,
 			GitKey:       gitKeyStore,
@@ -55,7 +53,6 @@ func main() {
 		codeHandler       = api.NewCodeHandler(store)
 		fileHandler       = api.NewFileHandler(fileStore)
 		repositoryHandler = api.NewRepositoryHandler(repositoryStore)
-		messageHandler    = api.NewMessageHandler(messageStore)
 		keyHandler        = api.NewKeyHandler(store)
 		sessionHandler    = api.NewSessionHandler(store)
 	)
@@ -92,8 +89,6 @@ func main() {
 	apiv1.Put("/key/git/:keyID", keyHandler.HandlePutGitKey)
 	apiv1.Post("/key/git", keyHandler.HandlePostGitKey)
 	apiv1.Delete("/key/git/:keyID", keyHandler.HandleDeleteGitKey)
-
-	apiv1.Get("/messages/:fileID", messageHandler.HandleGetMessages)
 
 	listenAddr := os.Getenv("HTTP_LISTEN_ADDRESS")
 	app.Listen(listenAddr)

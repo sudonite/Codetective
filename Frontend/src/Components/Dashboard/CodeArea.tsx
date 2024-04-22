@@ -1,24 +1,13 @@
 import { useState } from "react";
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import {
-  Codes,
-  File,
-  StatusType,
-  Code,
-  ChatMessages,
-  ChatMessage,
-  Repository,
-} from "@/Types";
-import { codeTheme, welcomeMessage } from "@/Consts";
-import { receiveAnswer } from "@/fakeAPI";
+import { Codes, File, StatusType, Code, Repository } from "@/Types";
+import { codeTheme } from "@/Consts";
 
 import { Button } from "@/Components/UI/Button";
 import { ScrollArea, ScrollBar } from "@/Components/UI/ScrollArea";
 import { RxChevronLeft, RxChevronRight } from "react-icons/rx";
-import { Input } from "@/Components/UI/Input";
 import CodeDropdown from "@/Components/Dashboard/CodeDropdown";
-import CodeChat from "@/Components/Dashboard/CodeChat";
 
 interface CodeAreaProps {
   codes: Codes;
@@ -39,10 +28,6 @@ const CodeArea = ({
 }: CodeAreaProps) => {
   const [lineNumbers, setLineNumbers] = useState<boolean>(true);
   const [wordWrap, setWordWrap] = useState<boolean>(false);
-  const [chatMessages, setChatMessages] = useState<ChatMessages>([
-    welcomeMessage,
-  ]);
-  const [chatInput, setChatInput] = useState<string>("");
 
   const handleStepper = (step: "prev" | "next") => {
     if (selectedCode) {
@@ -60,20 +45,6 @@ const CodeArea = ({
         const code = codes.find(code => code.id === step);
         if (code) onCodeChange(code);
       }
-    }
-  };
-
-  const handleChat = () => {
-    const newMessage: ChatMessage = {
-      id: `${chatMessages.length + 1}`,
-      message: chatInput,
-      sender: "user",
-      date: new Date(),
-    };
-    setChatInput("");
-    const response = receiveAnswer();
-    if (response?.status === 200) {
-      setChatMessages([...chatMessages, newMessage, response?.data]);
     }
   };
 
@@ -129,52 +100,36 @@ const CodeArea = ({
       </div>
       <div className="min-h-16 max-h-16 p-2 flex flex-row items-center border-t justify-between">
         {selectedCode && (
-          <>
-            <div className="flex items-center w-1/2">
-              <Button
-                className="m-1"
-                variant="secondary"
-                size="icon"
-                disabled={
-                  codes.findIndex(obj => obj.id == selectedCode?.id) === 0
-                }
-                onClick={() => handleStepper("prev")}
-              >
-                <RxChevronLeft className="h-6 w-6" />
-              </Button>
-              <Button
-                className="m-1"
-                variant="secondary"
-                size="icon"
-                disabled={
-                  codes.findIndex(obj => obj.id == selectedCode?.id) ===
-                  codes.length - 1
-                }
-                onClick={() => handleStepper("next")}
-              >
-                <RxChevronRight className="h-6 w-6" />
-              </Button>
-              <div className="m-2 text-lg font-semibold">
-                {`Code ${
-                  codes.findIndex(obj => obj.id == selectedCode?.id) + 1
-                } of ${codes.length}`}
-              </div>
+          <div className="flex flex-row w-full justify-start">
+            <Button
+              className="m-1"
+              variant="secondary"
+              size="icon"
+              disabled={
+                codes.findIndex(obj => obj.id == selectedCode?.id) === 0
+              }
+              onClick={() => handleStepper("prev")}
+            >
+              <RxChevronLeft className="h-6 w-6" />
+            </Button>
+            <Button
+              className="m-1"
+              variant="secondary"
+              size="icon"
+              disabled={
+                codes.findIndex(obj => obj.id == selectedCode?.id) ===
+                codes.length - 1
+              }
+              onClick={() => handleStepper("next")}
+            >
+              <RxChevronRight className="h-6 w-6" />
+            </Button>
+            <div className="m-2 text-lg font-semibold">
+              {`Code ${
+                codes.findIndex(obj => obj.id == selectedCode?.id) + 1
+              } of ${codes.length}`}
             </div>
-            <div className="flex items-center w-1/2 space-x-2">
-              <Input
-                type="text"
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                placeholder="Ask AI: Why is this code vulnerable? Explain..."
-              />
-              <CodeChat
-                chatInput={chatInput}
-                chatMessages={chatMessages}
-                handleChat={handleChat}
-                setChatInput={setChatInput}
-              />
-            </div>
-          </>
+          </div>
         )}
       </div>
     </div>
