@@ -27,6 +27,7 @@ services:
         MONGO_DB_NAME: $MONGO_DB_NAME
         MONGO_DB_URL: $MONGO_DB_URL
         JWT_SECRET: $JWT_SECRET
+        MAX_ACTIVE_SESSIONS: $MAX_ACTIVE_SESSIONS
     restart: unless-stopped
     ports:
       - 8000:8000

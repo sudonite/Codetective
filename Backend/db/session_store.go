@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -24,11 +25,11 @@ import (
 
 var (
 	fakeDelay      = time.Millisecond * 5
-	maxSessions    = 2
 	maxSessionIdle = time.Minute * 5
 	cleanerDelay   = time.Minute * 1
 	clonePath      = "sessions"
 	extensions     = []string{".c", ".cc", ".cpp"}
+	maxSessions, _ = strconv.Atoi(os.Getenv("MAX_ACTIVE_SESSIONS"))
 )
 
 type SessionStore interface {
@@ -258,6 +259,7 @@ func (s *WebsocketSessionStore) GetPosition(session *types.Session) int {
 func (s *WebsocketSessionStore) AddSession(user *types.User) *types.Session {
 	defer s.mu.Unlock()
 	s.mu.Lock()
+	fmt.Println("%#v", maxSessions)
 	newSession := &types.Session{
 		Directory: "",
 		Status:    types.Queue,
