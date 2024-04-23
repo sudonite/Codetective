@@ -2,8 +2,8 @@ package db
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -19,6 +19,7 @@ import (
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/cpp"
 	"github.com/sudonite/Codetective/types"
+	"github.com/valyala/fasthttp"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	sshcrypto "golang.org/x/crypto/ssh"
 )
@@ -40,7 +41,7 @@ type SessionStore interface {
 	ProcessStarter(*types.Session)
 	ProcessStopper(*types.Session)
 	HandleQueue()
-	HandleModel(string) bool
+	HandleModel(string) (bool, error)
 	GetSession(*types.User) *types.Session
 	GetPosition(*types.Session) int
 	AddSession(*types.User) *types.Session
@@ -137,13 +138,18 @@ func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
 		for _, function := range file.FuncPos {
 			content, err := os.ReadFile(filepath.Join(clonePath, session.Directory, file.Path))
 			if err != nil {
+				// @TODO: Better error handling
 				continue
 			}
 
 			s.ChangeMessage(session, fmt.Sprintf("Analyzing function %d of %d", actual, availableFunctions))
 			code, lineStart := s.GetCodeFromFile(content, &function)
 
-			vuln := s.HandleModel(code)
+			vuln, err := s.HandleModel(code)
+			if err != nil {
+				// @TODO: Better error handling
+				continue
+			}
 
 			if vuln {
 				vulnRepo = true
@@ -233,8 +239,32 @@ func (s *WebsocketSessionStore) HandleQueue() {
 	}
 }
 
-func (s *WebsocketSessionStore) HandleModel(code string) bool {
-	return rand.New(rand.NewSource(time.Now().UnixNano())).Intn(100) <= 2
+func (s *WebsocketSessionStore) HandleModel(code string) (bool, error) {
+	modelEndpoint := os.Getenv("MODEL_ENDPOINT_URL")
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.SetRequestURI(modelEndpoint)
+	req.Header.SetMethod("POST")
+	req.Header.SetContentType("text/plain")
+	req.SetBodyString(code)
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	err := fasthttp.Do(req, resp)
+	if err != nil {
+		return false, err
+	}
+
+	msg := types.ModelResponse{}
+	err = json.Unmarshal(resp.Body(), &msg)
+	if err != nil {
+		return false, err
+	}
+
+	return msg.Vulnerable, nil
 }
 
 func (s *WebsocketSessionStore) GetSession(user *types.User) *types.Session {
@@ -259,7 +289,6 @@ func (s *WebsocketSessionStore) GetPosition(session *types.Session) int {
 func (s *WebsocketSessionStore) AddSession(user *types.User) *types.Session {
 	defer s.mu.Unlock()
 	s.mu.Lock()
-	fmt.Println("%#v", maxSessions)
 	newSession := &types.Session{
 		Directory: "",
 		Status:    types.Queue,

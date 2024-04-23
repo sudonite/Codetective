@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/sudonite/Codetective/db"
 	"github.com/sudonite/Codetective/types"
+	"github.com/valyala/fasthttp"
 )
 
 const (
@@ -110,7 +112,10 @@ func (h *SessionHandler) HandleSession(c *websocket.Conn) {
 }
 
 func (h *SessionHandler) ConnectModel(session *types.Session) {
-	h.store.Session.ChangeStatus(session, types.WaitingForClient)
+	modelEndpoint := os.Getenv("MODEL_ENDPOINT_URL")
+	if code, _, _ := fasthttp.Get(nil, modelEndpoint); code == 200 {
+		h.store.Session.ChangeStatus(session, types.WaitingForClient)
+	}
 }
 
 func (h *SessionHandler) UpdateQueue(session *types.Session) {

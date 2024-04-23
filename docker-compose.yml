@@ -28,6 +28,7 @@ services:
         MONGO_DB_URL: $MONGO_DB_URL
         JWT_SECRET: $JWT_SECRET
         MAX_ACTIVE_SESSIONS: $MAX_ACTIVE_SESSIONS
+        MODEL_ENDPOINT_URL: $MODEL_ENDPOINT_URL
     restart: unless-stopped
     ports:
       - 8000:8000

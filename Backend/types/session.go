@@ -53,3 +53,7 @@ type SessionAction struct {
 	Platform GitPlatformType `json:"platform"`
 	Private  bool            `json:"priv"`
 }
+
+type ModelResponse struct {
+	Vulnerable bool `json:"vulnerable"`
+}
