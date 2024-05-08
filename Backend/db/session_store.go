@@ -138,8 +138,11 @@ func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
 		for _, function := range file.FuncPos {
 			content, err := os.ReadFile(filepath.Join(clonePath, session.Directory, file.Path))
 			if err != nil {
-				// @TODO: Better error handling
-				continue
+				repoParams := types.UpdateRepositoryParams{Status: types.Cancelled}
+				repoFilter := Map{"_id": repository.ID.Hex()}
+				s.repoStore.UpdateRepository(context.Background(), repoFilter, repoParams)
+				s.ProcessStopper(session)
+				return
 			}
 
 			s.ChangeMessage(session, fmt.Sprintf("Analyzing function %d of %d", actual, availableFunctions))
@@ -147,8 +150,11 @@ func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
 
 			vuln, err := s.HandleModel(code)
 			if err != nil {
-				// @TODO: Better error handling
-				continue
+				repoParams := types.UpdateRepositoryParams{Status: types.Cancelled}
+				repoFilter := Map{"_id": repository.ID.Hex()}
+				s.repoStore.UpdateRepository(context.Background(), repoFilter, repoParams)
+				s.ProcessStopper(session)
+				return
 			}
 
 			if vuln {
@@ -242,18 +248,27 @@ func (s *WebsocketSessionStore) HandleQueue() {
 func (s *WebsocketSessionStore) HandleModel(code string) (bool, error) {
 	modelEndpoint := os.Getenv("MODEL_ENDPOINT_URL")
 
+	data := map[string]string{
+		"code": code,
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return false, err
+	}
+
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
 	req.SetRequestURI(modelEndpoint)
 	req.Header.SetMethod("POST")
-	req.Header.SetContentType("text/plain")
-	req.SetBodyString(code)
+	req.Header.SetContentType("application/json")
+	req.SetBodyString(string(jsonData))
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
 
-	err := fasthttp.Do(req, resp)
+	err = fasthttp.Do(req, resp)
 	if err != nil {
 		return false, err
 	}

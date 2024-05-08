@@ -9,6 +9,15 @@ services:
     ports:
       - 27017:27017
 
+  model:
+    container_name: "${COMPOSE_PROJECT_NAME}-model"
+    build:
+      context: Model/Inference
+      dockerfile: ../../Docker/Dockerfile.model
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+
   frontend:
     container_name: "${COMPOSE_PROJECT_NAME}-frontend"
     build:
