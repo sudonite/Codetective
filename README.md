@@ -8,8 +8,7 @@
   <h3 align="center">Codetective</h3>
 
   <p align="center">
-    This application leverages AI to analyze C/C++ code within a Git repository, identifying potentially vulnerable functions.
-    Trained on functions from previous CVEs. It automates the detection process to enhance code security.
+    This application leverages AI to analyze C/C++ code within public or private repositories on platforms like GitHub, GitLab, Gitea, and Bitbucket. It identifies potentially vulnerable functions by referencing functions from previous CVEs. The tool automates the detection process to enhance code security across various repository platforms.
   </p>
 </div>
 
