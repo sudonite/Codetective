@@ -110,14 +110,14 @@ https://github.com/user-attachments/assets/cc69ad71-5252-48be-9a75-6aa0f09e5532
 
 ### Environment Variables
 
-| Name                    | Default Value              |         Description |
-| :---------------------- | :------------------------- | ------------------: |
-| **HTTP_LISTEN_ADDRESS** | `:8000`                    |    Backend API Port |
-| **MONGO_DB_NAME**       | `codetective`              |       Database Name |
-| **MONGO_DB_URL**        | `mongodb://database:27017` |        Database URL |
-| **MODEL_ENDPOINT_URL**  | `http://model:8080`        |   AI Model Endpoint |
-| **JWT_SECRET**          | `JWT_PLACE`                |    HMAC Signing Key |
-| **MAX_ACTIVE_SESSIONS** | `2`                        | Max. Parallel Scans |
+| Name                | Default Value              |         Description |
+| :------------------ | :------------------------- | ------------------: |
+| HTTP_LISTEN_ADDRESS | `:8000`                    |    Backend API Port |
+| MONGO_DB_NAME       | `codetective`              |       Database Name |
+| MONGO_DB_URL        | `mongodb://database:27017` |        Database URL |
+| MODEL_ENDPOINT_URL  | `http://model:8080`        |   AI Model Endpoint |
+| JWT_SECRET          | `JWT_PLACE`                |    HMAC Signing Key |
+| MAX_ACTIVE_SESSIONS | `2`                        | Max. Parallel Scans |
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
