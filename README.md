@@ -9,7 +9,6 @@
 
   <p align="center">
     This application leverages AI to analyze C/C++ code within a Git repository, identifying potentially vulnerable functions.
-    <br />
     Trained on functions from previous CVEs. It automates the detection process to enhance code security.
   </p>
 </div>
