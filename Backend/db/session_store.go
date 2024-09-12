@@ -60,7 +60,7 @@ type SessionStore interface {
 	CountFunctions(*types.Session) int
 }
 
-type WebsocketSessionStore struct {
+type MemorySessionStore struct {
 	sessions  *types.Sessions
 	codeStore *MongoCodeStore
 	fileStore *MongoFileStore
@@ -70,11 +70,18 @@ type WebsocketSessionStore struct {
 	mu        *sync.Mutex
 }
 
-func NewWebsocketSessionStore(sessions *types.Sessions, cs *MongoCodeStore, fs *MongoFileStore, rs *MongoRepositoryStore, sc chan *types.Session, fc chan *types.Session, mu *sync.Mutex) *WebsocketSessionStore {
-	return &WebsocketSessionStore{sessions, cs, fs, rs, sc, fc, mu}
+func NewMemorySessionStore(cs *MongoCodeStore, fs *MongoFileStore, rs *MongoRepositoryStore) *MemorySessionStore {
+	var (
+		mu       = &sync.Mutex{}
+		sessions = &types.Sessions{}
+		sc       = make(chan *types.Session)
+		fc       = make(chan *types.Session)
+	)
+
+	return &MemorySessionStore{sessions, cs, fs, rs, sc, fc, mu}
 }
 
-func (s *WebsocketSessionStore) SessionDaemon() {
+func (s *MemorySessionStore) SessionDaemon() {
 	for {
 		select {
 		case session := <-s.sc:
@@ -85,7 +92,7 @@ func (s *WebsocketSessionStore) SessionDaemon() {
 	}
 }
 
-func (s *WebsocketSessionStore) SessionCleaner() {
+func (s *MemorySessionStore) SessionCleaner() {
 	for {
 		time.Sleep(cleanerDelay)
 		scanDir := []string{}
@@ -110,7 +117,7 @@ func (s *WebsocketSessionStore) SessionCleaner() {
 	}
 }
 
-func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
+func (s *MemorySessionStore) SessionRunner(session *types.Session) {
 	var userID primitive.ObjectID
 	for k, v := range *s.sessions {
 		if v == session {
@@ -202,7 +209,7 @@ func (s *WebsocketSessionStore) SessionRunner(session *types.Session) {
 	s.ProcessStopper(session)
 }
 
-func (s *WebsocketSessionStore) SessionFinisher(session *types.Session) {
+func (s *MemorySessionStore) SessionFinisher(session *types.Session) {
 	s.ChangeStatus(session, types.Finished)
 	s.ChangeMessage(session, "")
 	s.TouchDate(session)
@@ -210,19 +217,19 @@ func (s *WebsocketSessionStore) SessionFinisher(session *types.Session) {
 	s.HandleQueue()
 }
 
-func (s *WebsocketSessionStore) ProcessStarter(session *types.Session) {
+func (s *MemorySessionStore) ProcessStarter(session *types.Session) {
 	s.mu.Lock()
 	s.sc <- session
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) ProcessStopper(session *types.Session) {
+func (s *MemorySessionStore) ProcessStopper(session *types.Session) {
 	s.mu.Lock()
 	s.fc <- session
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) HandleQueue() {
+func (s *MemorySessionStore) HandleQueue() {
 	scanning := 0
 	for _, v := range *s.sessions {
 		if v.Status != types.Queue {
@@ -245,7 +252,7 @@ func (s *WebsocketSessionStore) HandleQueue() {
 	}
 }
 
-func (s *WebsocketSessionStore) HandleModel(code string) (bool, error) {
+func (s *MemorySessionStore) HandleModel(code string) (bool, error) {
 	modelEndpoint := os.Getenv("MODEL_ENDPOINT_URL")
 
 	data := map[string]string{
@@ -282,17 +289,15 @@ func (s *WebsocketSessionStore) HandleModel(code string) (bool, error) {
 	return msg.Vulnerable, nil
 }
 
-func (s *WebsocketSessionStore) GetSession(user *types.User) *types.Session {
+func (s *MemorySessionStore) GetSession(user *types.User) *types.Session {
 	if session, ok := (*s.sessions)[user.ID]; ok {
 		return session
 	}
 	return s.AddSession(user)
 }
 
-func (s *WebsocketSessionStore) GetPosition(session *types.Session) int {
-	var (
-		position = 1
-	)
+func (s *MemorySessionStore) GetPosition(session *types.Session) int {
+	position := 1
 	for _, v := range *s.sessions {
 		if v.Status == types.Queue && v.Modified.Before(session.Modified) {
 			position++
@@ -301,7 +306,7 @@ func (s *WebsocketSessionStore) GetPosition(session *types.Session) int {
 	return position
 }
 
-func (s *WebsocketSessionStore) AddSession(user *types.User) *types.Session {
+func (s *MemorySessionStore) AddSession(user *types.User) *types.Session {
 	defer s.mu.Unlock()
 	s.mu.Lock()
 	newSession := &types.Session{
@@ -317,13 +322,13 @@ func (s *WebsocketSessionStore) AddSession(user *types.User) *types.Session {
 	return newSession
 }
 
-func (s *WebsocketSessionStore) AddFile(session *types.Session, file *types.FileFuncType) {
+func (s *MemorySessionStore) AddFile(session *types.Session, file *types.FileFuncType) {
 	s.mu.Lock()
 	session.Files = append(session.Files, *file)
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) DeleteSession(session *types.Session) {
+func (s *MemorySessionStore) DeleteSession(session *types.Session) {
 	os.RemoveAll(filepath.Join(clonePath, session.Directory))
 	for k, v := range *s.sessions {
 		if v == session {
@@ -335,58 +340,56 @@ func (s *WebsocketSessionStore) DeleteSession(session *types.Session) {
 	}
 }
 
-func (s *WebsocketSessionStore) TouchDate(session *types.Session) {
+func (s *MemorySessionStore) TouchDate(session *types.Session) {
 	s.mu.Lock()
 	session.Modified = time.Now()
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) ChangeStatus(session *types.Session, status types.SessionStatusType) {
+func (s *MemorySessionStore) ChangeStatus(session *types.Session, status types.SessionStatusType) {
 	s.mu.Lock()
 	session.Status = status
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) ChangeMessage(session *types.Session, message string) {
+func (s *MemorySessionStore) ChangeMessage(session *types.Session, message string) {
 	s.mu.Lock()
 	session.Message = message
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) ChangeName(session *types.Session, name string) {
+func (s *MemorySessionStore) ChangeName(session *types.Session, name string) {
 	s.mu.Lock()
 	session.Name = name
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) ChangePlatform(session *types.Session, platform types.GitPlatformType) {
+func (s *MemorySessionStore) ChangePlatform(session *types.Session, platform types.GitPlatformType) {
 	s.mu.Lock()
 	session.Platform = platform
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) ChangeDirectory(session *types.Session, dir string) {
+func (s *MemorySessionStore) ChangeDirectory(session *types.Session, dir string) {
 	s.mu.Lock()
 	session.Directory = dir
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) ChangeRepositoryID(session *types.Session, id primitive.ObjectID) {
+func (s *MemorySessionStore) ChangeRepositoryID(session *types.Session, id primitive.ObjectID) {
 	s.mu.Lock()
 	session.RepositoryID = id
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) ChangeURL(session *types.Session, url string) {
+func (s *MemorySessionStore) ChangeURL(session *types.Session, url string) {
 	s.mu.Lock()
 	session.URL = url
 	s.mu.Unlock()
 }
 
-func (s *WebsocketSessionStore) CloneRepository(session *types.Session, user *types.User, key *types.GitKey, link string, priv bool) error {
-	var (
-		repoName = "Unknown"
-	)
+func (s *MemorySessionStore) CloneRepository(session *types.Session, user *types.User, key *types.GitKey, link string, priv bool) error {
+	repoName := "Unknown"
 
 	re := regexp.MustCompile(`(?:\/|:)([^\/:]+)\/([^\/:]+?)(?:\.git)?$`)
 	match := re.FindStringSubmatch(link)
@@ -432,7 +435,7 @@ func (s *WebsocketSessionStore) CloneRepository(session *types.Session, user *ty
 	return nil
 }
 
-func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Session) error {
+func (s *MemorySessionStore) GetFunctionsFromRepository(session *types.Session) error {
 	var (
 		files = []string{}
 		dir   = filepath.Join(clonePath, session.Directory)
@@ -494,7 +497,7 @@ func (s *WebsocketSessionStore) GetFunctionsFromRepository(session *types.Sessio
 	return nil
 }
 
-func (s *WebsocketSessionStore) GetCodeFromFile(file []byte, pos *types.FuncPostType) (string, int) {
+func (s *MemorySessionStore) GetCodeFromFile(file []byte, pos *types.FuncPostType) (string, int) {
 	code := string(file[pos.StartByte:pos.EndByte])
 	code = strings.ReplaceAll(code, "\n", "\\n")
 	code = strings.ReplaceAll(code, "\t", "\\t")
@@ -508,7 +511,7 @@ func (s *WebsocketSessionStore) GetCodeFromFile(file []byte, pos *types.FuncPost
 	return code, lineCount
 }
 
-func (s *WebsocketSessionStore) CountFunctions(session *types.Session) int {
+func (s *MemorySessionStore) CountFunctions(session *types.Session) int {
 	sum := 0
 	for _, v := range session.Files {
 		sum += len(v.FuncPos)

@@ -4,14 +4,12 @@ import (
 	"context"
 	"log"
 	"os"
-	"sync"
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/sudonite/Codetective/api"
 	"github.com/sudonite/Codetective/db"
-	"github.com/sudonite/Codetective/types"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -28,17 +26,13 @@ func main() {
 	}
 
 	var (
-		mu                = &sync.Mutex{}
-		sessions          = &types.Sessions{}
-		startCh           = make(chan *types.Session)
-		finishCh          = make(chan *types.Session)
 		userStore         = db.NewMongoUserStore(client)
 		codeStore         = db.NewMongoCodeStore(client)
 		fileStore         = db.NewMongoFileStore(client)
 		repositoryStore   = db.NewMongoRepositoryStore(client)
 		gitKeyStore       = db.NewMongoGitKeyStore(client)
 		subscriptionStore = db.NewMongoSubscriptionStore(client)
-		sessionStore      = db.NewWebsocketSessionStore(sessions, codeStore, fileStore, repositoryStore, startCh, finishCh, mu)
+		sessionStore      = db.NewMemorySessionStore(codeStore, fileStore, repositoryStore)
 		store             = &db.Store{
 			User:         userStore,
 			Repository:   repositoryStore,
