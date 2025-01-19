@@ -84,6 +84,7 @@ https://github.com/user-attachments/assets/cc69ad71-5252-48be-9a75-6aa0f09e5532
 ### Built With
 [![React][React-badge]][React-url]
 [![Bun][Bun-badge]][Bun-url]
+[![Tailwind][Tailwind-badge]][Tailwind-url]
 [![Golang][Golang-badge]][Golang-url]
 [![Fiber][Fiber-badge]][Fiber-url]
 [![Python][Python-badge]][Python-url]
@@ -170,6 +171,8 @@ $ sudo docker rmi -f $(sudo docker images -q -f "reference=codetective-*")
 [React-url]: https://reactjs.org/
 [Bun-badge]: https://img.shields.io/badge/Bun-Codetective?style=for-the-badge&logo=bun&logoColor=FBF0DF&color=14151A
 [Bun-url]: https://bun.sh/
+[Tailwind-badge]: https://img.shields.io/badge/Tailwind-Codetective?style=for-the-badge&logo=tailwindcss&logoColor=38BDF8&color=0F1527
+[Tailwind-url]: https://tailwindcss.com/
 [Golang-badge]: https://img.shields.io/badge/Golang-Codetective?style=for-the-badge&logo=go&logoColor=FFFFFF&color=007D9C
 [Golang-url]: https://go.dev
 [Fiber-badge]: https://img.shields.io/badge/Fiber-Codetective?style=for-the-badge&logo=go&logoColor=FFFFFF&color=242526
